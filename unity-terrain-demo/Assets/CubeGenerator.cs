@@ -226,6 +226,45 @@ public class CubeGenerator : MonoBehaviour
 		meshFilter.mesh = mesh;
 	}
 
+		// Draw Gizmos for each cube corner with grayscale based on value
+	void OnDrawGizmos()
+	{
+		if (cube_corner_vals == null || CornerTable == null)
+			return;
+
+		if (generateChunk)
+		{
+			for (int x = 0; x < chunkSize; x++)
+			{
+				for (int y = 0; y < chunkSize; y++)
+				{
+					for (int z = 0; z < chunkSize; z++)
+					{
+						Vector3 voxelPosition = new Vector3(x, y, z);
+						for (int i = 0; i < 8; i++)
+						{
+							Vector3 cornerPosition = voxelPosition + CornerTable[i];
+							float intensity = Mathf.Clamp01(cube_corner_vals[i]);
+							Gizmos.color = new Color(intensity, intensity, intensity);
+							Gizmos.DrawSphere(cornerPosition, 0.1f);
+						}
+					}
+				}
+			}
+		}
+		else
+		{
+			Vector3 position = transform.position;
+			for (int i = 0; i < 8; i++)
+			{
+				Vector3 cornerPosition = position + CornerTable[i];
+				float intensity = Mathf.Clamp01(cube_corner_vals[i]);
+				Gizmos.color = new Color(intensity, intensity, intensity);
+				Gizmos.DrawSphere(cornerPosition, 0.1f);
+			}
+		}
+	}
+
 	Vector3Int[] CornerTable = new Vector3Int[8] {
 
 		new Vector3Int(0, 0, 0),
