@@ -159,13 +159,15 @@ public class CubeGenerator : MonoBehaviour
 					float val2 = cube_corner_vals[CornerIndex(EdgeTable[indice, 1])];
 
 					// Calculate the difference between the terrain values.
-					float difference = val1 - val2;
+					float difference = val2 - val1;
 
 					// If the difference is 0, then the terrain passes through the middle.
 					// Can we delete this check?
+					/*
 					if (difference == 0)
 						difference = iso_val;
 					else
+					*/
 						difference = (iso_val - val1) / difference;
 
 					// Calculate the point along the edge that passes through.
