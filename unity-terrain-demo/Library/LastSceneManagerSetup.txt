@@ -1,5 +1,5 @@
 sceneSetups:
-- path: Assets/terrain-demo-scene.unity
+- path: Assets/Debug Chunk.unity
   isLoaded: 1
   isActive: 1
   isSubScene: 0
