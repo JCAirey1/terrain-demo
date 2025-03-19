@@ -9,7 +9,7 @@ public class ChunkGenerator : MonoBehaviour
     public int WorldSeed = 1;
 
     //Perlin Noise Settings
-    public float scale = 90f; //for terrain generation
+    [Range(0f, 20f)] public float scale = 16f; //for terrain generation
 	public int octaves = 4; //for terrain generation
 	public float persistance = 0.3f; //for terrain generation
 	public float lacunarity = 2.3f; //for terrain generation
@@ -42,13 +42,14 @@ public class ChunkGenerator : MonoBehaviour
         meshFilter = GetComponent<MeshFilter>();
         meshCollider = GetComponent<MeshCollider>();
         terrainMap = new float[width + 1, height + 1, width + 1];
-        PopulateTerrainMap() ;
+        PopulateTerrainMap();
         CreateMeshData();
     }
 
     // Update is called once per frame
     void Update()
     {
+		PopulateTerrainMap();
         ClearMeshData();
 		CreateMeshData();
 		BuildMesh();
@@ -71,7 +72,8 @@ public class ChunkGenerator : MonoBehaviour
 					//Using clamp to bound PerlinNoise as it intends to return a value 0.0f-1.0f but may sometimes be slightly out of that range
 					//Multipying by height will return a value in the range of 0-height
 					//thisHeight = GetTerrianHeight(x + _position.x, z + _position.z, scale, octaves, persistance, lacunarity);
-                    float thisHeight = (float)height * Mathf.PerlinNoise((float)x / 16f * 1.5f + 0.001f, (float)z / 16f * 1.5f + 0.001f);
+                    //float thisHeight = (float)height * Mathf.PerlinNoise((float)x / 16f * 1.5f + 0.001f, (float)z / 16f * 1.5f + 0.001f);
+					float thisHeight = (float)height * Mathf.PerlinNoise((float)x / scale * 1.5f + 0.001f, (float)z / scale * 1.5f + 0.001f);
                     
                     //y points below thisHeight will be negative (below terrain) and y points above this Height will be positve and will render 
 					terrainMap[x, y, z] = (float)y - thisHeight;
