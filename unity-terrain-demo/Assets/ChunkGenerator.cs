@@ -6,7 +6,7 @@ public class ChunkGenerator : MonoBehaviour
 {
     MeshFilter meshFilter;
     MeshCollider meshCollider;
-    public int WorldSeed = 1;
+    public int worldSeed = 1;
 
     //Perlin Noise Settings
     [Range(0f, 20f)] public float scale = 16f; //for terrain generation
@@ -49,16 +49,20 @@ public class ChunkGenerator : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+		terrainMap = new float[width + 1, height + 1, width + 1];
 		PopulateTerrainMap();
         ClearMeshData();
 		CreateMeshData();
 		BuildMesh();
     }
 
-    public  float GetTerrianHeight (int x, int z)
+	//Basic Perlin Noise sampler
+    /*
+	public float GetTerrianHeight (int x, int z)
     {
 		return (float)TerrainHeightRange * Mathf.Clamp(Mathf.PerlinNoise((float)x / 16f * 1.5f, (float)z / 16f * 1.5f), 0.0f, 1.0f) + BaseTerrainHeight; //the 16f and 1.5f are made up coefficients
 	}
+	*/
 
     // The data points for terrain are stored at the corners of our "cubes", so the terrainMap needs to be 1 larger than the width/height of our mesh.
     void PopulateTerrainMap()
@@ -71,9 +75,9 @@ public class ChunkGenerator : MonoBehaviour
 				{
 					//Using clamp to bound PerlinNoise as it intends to return a value 0.0f-1.0f but may sometimes be slightly out of that range
 					//Multipying by height will return a value in the range of 0-height
-					//thisHeight = GetTerrianHeight(x + _position.x, z + _position.z, scale, octaves, persistance, lacunarity);
+					float thisHeight = GetTerrianHeight(x + _position.x, z + _position.z, scale, octaves, persistance, lacunarity, worldSeed);
                     //float thisHeight = (float)height * Mathf.PerlinNoise((float)x / 16f * 1.5f + 0.001f, (float)z / 16f * 1.5f + 0.001f);
-					float thisHeight = (float)height * Mathf.PerlinNoise((float)x / scale * 1.5f + 0.001f, (float)z / scale * 1.5f + 0.001f);
+					//float thisHeight = (float)height * Mathf.PerlinNoise((float)x / scale * 1.5f + 0.001f, (float)z / scale * 1.5f + 0.001f);
                     
                     //y points below thisHeight will be negative (below terrain) and y points above this Height will be positve and will render 
 					terrainMap[x, y, z] = (float)y - thisHeight;
@@ -81,30 +85,33 @@ public class ChunkGenerator : MonoBehaviour
 			}
 		}
     }
-    public float GetTerrianHeight(int x, int z, float scale, int octaves, float persistance, float lacunarity)
-	{
-		float amplitude = 1;
-		float frequency = 1.5f;
-		float noiseHeight = 0;
-		float perlinValue = 0;
 
+    //Configurable Perlin Noise sampler
+	public float GetTerrianHeight(int x, int z, float scale, int octaves, float persistance, float lacunarity, int worldSeed)
+{
+    System.Random prng = new System.Random(worldSeed);
+    int offsetX = prng.Next(int.MinValue, int.MaxValue); //To be added as an offset to the sampled points
+    int offsetZ = prng.Next(int.MinValue, int.MaxValue);
 
-		for (int i = 0; i < octaves; i++)
-        {
-			float sampleX = x / scale * frequency;
-			float sampleZ = z / scale * frequency;
+    float amplitude = 1;
+    float frequency = 1.5f;
+    float noiseHeight = 0;
+    float perlinValue = 0;
 
-			perlinValue = Mathf.Clamp(Mathf.PerlinNoise(sampleX, sampleZ), 0.0f, 1.0f);
-			noiseHeight += perlinValue * amplitude;
+    for (int i = 0; i < octaves; i++)
+    {
+        float sampleX = x / scale * frequency + (float)worldSeed; //not working with offsetX, using worldSeed directly for now
+        float sampleZ = z / scale * frequency + (float)worldSeed;
 
-			amplitude *= persistance;
-			frequency *= lacunarity;
-		}
+        perlinValue = Mathf.Clamp(Mathf.PerlinNoise(sampleX, sampleZ), 0.0f, 1.0f);
+        noiseHeight += perlinValue * amplitude;
 
-		//return (float)GameData.TerrainHeightRange * Mathf.Clamp(Mathf.PerlinNoise((float)x / 16f * 1.5f, (float)z / 16f * 1.5f), 0.0f, 1.0f) + GameData.BaseTerrainHeight; //the 16f and 1.5f are made up coefficients
-		return (float)TerrainHeightRange * noiseHeight + BaseTerrainHeight;
-		//return (float)GameData.TerrainHeightRange * perlinValue + GameData.BaseTerrainHeight;
-	}
+        amplitude *= persistance;
+        frequency *= lacunarity;
+    }
+
+    return (float)TerrainHeightRange * noiseHeight + BaseTerrainHeight;
+}
 
     void ClearMeshData()
     {
