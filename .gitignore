@@ -2,22 +2,13 @@
 #
 # Get latest from https://github.com/github/gitignore/blob/main/Unity.gitignore
 #
-.utmp/
-/Library/
-/[Tt]emp/
-/[Oo]bj/
-/[Bb]uild/
-/[Bb]uilds/
-/Logs/
-/[Uu]ser[Ss]ettings/
-/UserSettings/
-/ProjectSettings/
-# MemoryCaptures can get excessive in size.
-# They also could contain extremely sensitive data
-/[Mm]emoryCaptures/
-/Assets/CommonLib/
+UserSettings/
+ProjectSettings/
 obj/
 bin/
+Temp/
+Logs/
+Library/
 
 # Recordings can get excessive in size
 /[Rr]ecordings/
