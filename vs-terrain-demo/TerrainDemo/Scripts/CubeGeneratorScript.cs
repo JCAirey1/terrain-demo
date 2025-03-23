@@ -1,13 +1,9 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using System.Diagnostics;
+﻿using UnityEngine;
 using TerrainDemo;
-using System.Runtime.InteropServices;
-using System;
 
 public class CubeGeneratorScript : MonoBehaviour
 {
+
     MeshFilter meshFilter;
     [Range(0f, 1f)] public float iso_val = 0.5f; // Isosurface Value, surface that represents points of a constant value
     public bool useLists = true; // Toggle between list-based and array-based storage
@@ -27,16 +23,11 @@ public class CubeGeneratorScript : MonoBehaviour
     [Range(0f, 1f)] public float cube_corner_val6 = 0f;
     [Range(0f, 1f)] public float cube_corner_val7 = 0f;
 
-    // Create an array of floats representing each corner of a cube and get the value from our terrainMap.
-    float[] cube_corner_vals = new float[8];
     TerrainDemo.CubeGenerator cubeGeneratorGameObject;
 
-    // Start is called before the first frame update
-    void Start()
+    private CubeGeneratorOptions GetOptions()
     {
-        meshFilter = GetComponent<MeshFilter>();
-
-        var options = new CubeGeneratorOptions()
+        return new CubeGeneratorOptions()
         {
             ChunkSize = chunkSize,
             CubeCornerVal0 = cube_corner_val0,
@@ -54,14 +45,20 @@ public class CubeGeneratorScript : MonoBehaviour
             UseLists = useLists,
             UseManualCornerValues = useManualCornerValues,
         };
+    }
 
-        var behaviors = new CubeGeneratorBehaviors()
+    private CubeGeneratorBehaviors GetBehiviors()
+    {
+        return new CubeGeneratorBehaviors()
         {
             BuildMesh = (vertices, triangles) =>
             {
-                Mesh mesh = new Mesh();
-                mesh.vertices = vertices;
-                mesh.triangles = triangles;
+                Mesh mesh = new Mesh
+                {
+                    vertices = vertices,
+                    triangles = triangles
+                };
+
                 mesh.RecalculateNormals();
                 meshFilter.mesh = mesh;
             },
@@ -77,18 +74,40 @@ public class CubeGeneratorScript : MonoBehaviour
             },
             GetTransformPosition = () => transform.position
         };
+    }
 
-        cubeGeneratorGameObject = new TerrainDemo.CubeGenerator(options, behaviors);
+    private void RefreshGameObject()
+    {
+        cubeGeneratorGameObject.RefreshOptions(GetOptions());
+    }
+
+    public CubeGeneratorScript()
+    {
+        cubeGeneratorGameObject = new TerrainDemo.CubeGenerator(GetOptions(), GetBehiviors());
+    }
+
+    void Start()
+    {
+        meshFilter = GetComponent<MeshFilter>();
+
+        if (meshFilter == null)
+        {
+            Debug.LogError("No MeshFilter found on " + gameObject.name);
+            meshFilter = gameObject.AddComponent<MeshFilter>();
+        }
+
         cubeGeneratorGameObject.Start();
     }
 
     void Update()
     {
+        RefreshGameObject();
         cubeGeneratorGameObject.Update();
     }
 
     void OnDrawGizmos()
     {
+        RefreshGameObject();
         cubeGeneratorGameObject.OnDrawGizmos();
         return;
     }

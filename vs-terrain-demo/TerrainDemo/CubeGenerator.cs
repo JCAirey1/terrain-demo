@@ -34,27 +34,48 @@ namespace TerrainDemo
             this.BuildMesh = behaviors.BuildMesh;
         }
 
-        //OPTIONS
-        private readonly float iso_val = 0.5f;              // Isosurface Value, surface that represents points of a constant value
-        private readonly bool useLists = true;              // Toggle between list-based and array-based storage
-        private readonly bool generateChunk = false;        // Toggle to generate a chunk of voxels
-        private readonly bool useManualCornerValues = true; // Toggle between manual corner values and Perlin noise
-        private readonly int chunkSize = 8;                 // Define chunk size
-        private readonly float perlinScale = 0.1f;          // Scale for Perlin noise terrain generation
-        private readonly bool smoothTerrain = false;        // Toggle for smoothing terrain
-        private readonly float cubeCornerVal0 = 0f;         //Float values for each corner of the cube, these are in the voxel grid
-        private readonly float cubeCornerVal1 = 0f;
-        private readonly float cubeCornerVal2 = 0f;
-        private readonly float cubeCornerVal3 = 0f;
-        private readonly float cubeCornerVal4 = 0f;
-        private readonly float cubeCornerVal5 = 0f;
-        private readonly float cubeCornerVal6 = 0f;
-        private readonly float cubeCornerVal7 = 0f;
+        public void RefreshOptions(CubeGeneratorOptions options)
+        {
+            this.chunkSize = options.ChunkSize;
+            this.cubeCornerVal0 = options.CubeCornerVal0;
+            this.cubeCornerVal1 = options.CubeCornerVal1;
+            this.cubeCornerVal2 = options.CubeCornerVal2;
+            this.cubeCornerVal3 = options.CubeCornerVal3;
+            this.cubeCornerVal4 = options.CubeCornerVal4;
+            this.cubeCornerVal5 = options.CubeCornerVal5;
+            this.cubeCornerVal6 = options.CubeCornerVal6;
+            this.cubeCornerVal7 = options.CubeCornerVal7;
+            this.generateChunk = options.GenerateChunk;
+            this.iso_val = options.Iso_val;
+            this.perlinScale = options.PerlinScale;
+            this.smoothTerrain = options.SmoothTerrain;
+            this.useLists = options.UseLists;
+            this.useManualCornerValues = options.UseManualCornerValues;
+        }
+
+        //Delegates
         private readonly Func<float> GeneratePerlinNoiseDefault;
         private readonly Func<float, float, int, float> GeneratePerlinNoise;
         private readonly Func<Vector3> GetTransformPosition;
         private readonly Action<Vector3, float> DrawGizmo;
         private readonly Action<Vector3[], int[]> BuildMesh;
+
+        //OPTIONS
+        private float iso_val = 0.5f;              // Isosurface Value, surface that represents points of a constant value
+        private bool useLists = true;              // Toggle between list-based and array-based storage
+        private bool generateChunk = false;        // Toggle to generate a chunk of voxels
+        private bool useManualCornerValues = true; // Toggle between manual corner values and Perlin noise
+        private int chunkSize = 8;                 // Define chunk size
+        private float perlinScale = 0.1f;          // Scale for Perlin noise terrain generation
+        private bool smoothTerrain = false;        // Toggle for smoothing terrain
+        private float cubeCornerVal0 = 0f;         //Float values for each corner of the cube, these are in the voxel grid
+        private float cubeCornerVal1 = 0f;
+        private float cubeCornerVal2 = 0f;
+        private float cubeCornerVal3 = 0f;
+        private float cubeCornerVal4 = 0f;
+        private float cubeCornerVal5 = 0f;
+        private float cubeCornerVal6 = 0f;
+        private float cubeCornerVal7 = 0f;
 
         //INTERNALS
         private readonly List<Vector3> verticesList = new List<Vector3>();
