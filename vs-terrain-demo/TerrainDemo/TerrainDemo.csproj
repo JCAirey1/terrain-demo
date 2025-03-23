@@ -43,6 +43,12 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Xml" />
+    <Reference Include="UnityEngine">
+      <HintPath>..\ExternalLibs\UnityEngine.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>..\ExternalLibs\UnityEngine.CoreModule.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Constants.cs" />
@@ -50,10 +56,11 @@
     <Compile Include="CubeGeneratorBehaviors.cs" />
     <Compile Include="DTO\CubeGeneratorOptions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <None Include="Scripts\CubeGeneratorScript.cs" />
+    <Compile Include="Scripts\CubeGeneratorScript.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>xcopy /Y "$(TargetPath)" "$(SolutionDir)..\unity-terrain-demo\Assets\CommonLib"</PostBuildEvent>
+    <PostBuildEvent>xcopy /Y "$(TargetPath)" "$(SolutionDir)..\unity-terrain-demo\Assets\CommonLib"
+xcopy /Y "$(ProjectDir)Scripts\CubeGeneratorScript.cs" "$(SolutionDir)..\unity-terrain-demo\Assets\Scripts"</PostBuildEvent>
   </PropertyGroup>
 </Project>

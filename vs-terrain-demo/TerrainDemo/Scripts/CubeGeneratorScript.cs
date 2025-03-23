@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using UnityEngine;
 using System.Diagnostics;
-using System.Numerics;
 using TerrainDemo;
 using System.Runtime.InteropServices;
 using System;
@@ -18,14 +17,6 @@ public class CubeGeneratorScript : MonoBehaviour
     public float perlinScale = 0.1f; // Scale for Perlin noise terrain generation
     public bool smoothTerrain = false; // Toggle for smoothing terrain
 
-    List<Vector3> verticesList = new List<Vector3>();
-    List<int> trianglesList = new List<int>();
-
-    Vector3[] verticesArray;
-    int[] trianglesArray;
-    int vertexCount = 0;
-    int triangleCount = 0;
-
     //Float values for each corner of the cube, these are in the voxel grid
     [Range(0f, 1f)] public float cube_corner_val0 = 0f;
     [Range(0f, 1f)] public float cube_corner_val1 = 0f;
@@ -38,8 +29,7 @@ public class CubeGeneratorScript : MonoBehaviour
 
     // Create an array of floats representing each corner of a cube and get the value from our terrainMap.
     float[] cube_corner_vals = new float[8];
-    CubeGenerator gameObject;
-
+    TerrainDemo.CubeGenerator cubeGeneratorGameObject;
 
     // Start is called before the first frame update
     void Start()
@@ -78,61 +68,28 @@ public class CubeGeneratorScript : MonoBehaviour
             GeneratePerlinNoise = (x, z, chunkSize) => {
                 return Mathf.PerlinNoise(x * perlinScale, z * perlinScale) * chunkSize;
             },
-            GeneratePerlinNoiseDefault = () => Mathf.PerlinNoise(0, 0)
+            GeneratePerlinNoiseDefault = () => Mathf.PerlinNoise(0, 0),
+            DrawGizmo = (cornerPosition, cubeCornerValue) =>
+            {
+                float intensity = Mathf.Clamp01(cubeCornerValue);
+                Gizmos.color = new Color(intensity, intensity, intensity);
+                Gizmos.DrawSphere(cornerPosition, 0.1f);
+            },
+            GetTransformPosition = () => transform.position
         };
 
-        //public Action<float> DrawGizmo;
-        //public Action<Vector3[], int[]> BuildMesh;
-        //public Func<Vector3> GetTransformPosition;
-        //public Func<float, float, float> GeneratePerlinNoiseDefault;
-        //public Func<float, float, int, float> GeneratePerlinNoise;
-
-        gameObject = new TerrainDemo.CubeGenerator(options, behaviors);
-        gameObject.Start();
+        cubeGeneratorGameObject = new TerrainDemo.CubeGenerator(options, behaviors);
+        cubeGeneratorGameObject.Start();
     }
 
     void Update()
     {
-        gameObject.Update();
+        cubeGeneratorGameObject.Update();
     }
 
     void OnDrawGizmos()
     {
-        if (cubeCornerVals == null || Constants.CornerTable == null)
-            return;
-
-        if (generateChunk)
-        {
-            for (int x = 0; x < chunkSize; x++)
-            {
-                for (int y = 0; y < chunkSize; y++)
-                {
-                    for (int z = 0; z < chunkSize; z++)
-                    {
-                        Vector3 voxelPosition = new Vector3(x, y, z);
-                        for (int i = 0; i < 8; i++)
-                        {
-                            Vector3 cornerPosition = voxelPosition + Constants.CornerTable[i];
-                            DrawGizmo(cubeCornerVals[i]);
-                            float intensity = Mathf.Clamp01(cubeCornerVals[i]);
-                            Gizmos.color = new Color(intensity, intensity, intensity);
-                            Gizmos.DrawSphere(cornerPosition, 0.1f);
-                    }
-                    }
-                }
-            }
-        }
-        else
-        {
-            Vector3 position = transform.position;
-            for (int i = 0; i < 8; i++)
-            {
-                Vector3 cornerPosition = position + Constants.CornerTable[i];
-                DrawGizmo(cubeCornerVals[i]);
-                float intensity = Mathf.Clamp01(cubeCornerVals[i]);
-                Gizmos.color = new Color(intensity, intensity, intensity);
-                Gizmos.DrawSphere(cornerPosition, 0.1f);
-            }
-        }
+        cubeGeneratorGameObject.OnDrawGizmos();
+        return;
     }
 }

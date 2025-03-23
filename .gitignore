@@ -9,6 +9,8 @@ bin/
 Temp/
 Logs/
 Library/
+**/Assets/CommonLib/
+**/Assets/Scripts/
 
 # Recordings can get excessive in size
 /[Rr]ecordings/

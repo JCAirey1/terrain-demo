@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Numerics;
+using UnityEngine;
 
 namespace TerrainDemo
 {
@@ -29,8 +29,8 @@ namespace TerrainDemo
 
             this.GeneratePerlinNoiseDefault = behaviors.GeneratePerlinNoiseDefault;
             this.GeneratePerlinNoise = behaviors.GeneratePerlinNoise;
-            //this.DrawGizmo = behaviors.DrawGizmo;
-            //this.GetTransformPosition = behaviors.GetTransformPosition;
+            this.DrawGizmo = behaviors.DrawGizmo;
+            this.GetTransformPosition = behaviors.GetTransformPosition;
             this.BuildMesh = behaviors.BuildMesh;
         }
 
@@ -52,8 +52,8 @@ namespace TerrainDemo
         private readonly float cubeCornerVal7 = 0f;
         private readonly Func<float> GeneratePerlinNoiseDefault;
         private readonly Func<float, float, int, float> GeneratePerlinNoise;
-        //private readonly Func<Vector3> GetTransformPosition;
-        //private readonly Action<float> DrawGizmo;
+        private readonly Func<Vector3> GetTransformPosition;
+        private readonly Action<Vector3, float> DrawGizmo;
         private readonly Action<Vector3[], int[]> BuildMesh;
 
         //INTERNALS
@@ -115,7 +115,8 @@ namespace TerrainDemo
 
                     cubeCornerVals = new float[] { terrainValue, terrainValue, terrainValue, terrainValue, terrainValue, terrainValue, terrainValue, terrainValue };
                 }
-                GenerateVoxel(Vector3.Zero, cubeCornerVals[0]);
+
+                GenerateVoxel(new Vector3(0, 0, 0), cubeCornerVals[0]);
             }
 
             BuildMesh(useLists ? verticesList.ToArray() : verticesArray, useLists ? trianglesList.ToArray() : trianglesArray);
@@ -249,46 +250,38 @@ namespace TerrainDemo
             }
         }
 
-        // Draw Gizmos for each cube corner with grayscale based on value
-        //void OnDrawGizmos()
-        //{
-        //    if (cubeCornerVals == null || Constants.CornerTable == null)
-        //        return;
+        public void OnDrawGizmos()
+        {
+            if (cubeCornerVals == null || Constants.CornerTable == null)
+                return;
 
-        //    if (generateChunk)
-        //    {
-        //        for (int x = 0; x < chunkSize; x++)
-        //        {
-        //            for (int y = 0; y < chunkSize; y++)
-        //            {
-        //                for (int z = 0; z < chunkSize; z++)
-        //                {
-        //                    Vector3 voxelPosition = new Vector3(x, y, z);
-        //                    for (int i = 0; i < 8; i++)
-        //                    {
-        //                        Vector3 cornerPosition = voxelPosition + Constants.CornerTable[i];
-        //                        DrawGizmo(cubeCornerVals[i]);
-        //                        //float intensity = Mathf.Clamp01(cubeCornerVals[i]);
-        //                        //Gizmos.color = new Color(intensity, intensity, intensity);
-        //                        //Gizmos.DrawSphere(cornerPosition, 0.1f);
-        //                    }
-        //                }
-        //            }
-        //        }
-        //    }
-        //    else
-        //    {
-        //        //Vector3 position = transform.position;
-        //        Vector3 position = GetTransformPosition();
-        //        for (int i = 0; i < 8; i++)
-        //        {
-        //            Vector3 cornerPosition = position + Constants.CornerTable[i];
-        //            DrawGizmo(cubeCornerVals[i]);
-        //            //float intensity = Mathf.Clamp01(cubeCornerVals[i]);
-        //            //Gizmos.color = new Color(intensity, intensity, intensity);
-        //            //Gizmos.DrawSphere(cornerPosition, 0.1f);
-        //        }
-        //    }
-        //}
+            if (generateChunk)
+            {
+                for (int x = 0; x < chunkSize; x++)
+                {
+                    for (int y = 0; y < chunkSize; y++)
+                    {
+                        for (int z = 0; z < chunkSize; z++)
+                        {
+                            Vector3 voxelPosition = new Vector3(x, y, z);
+                            for (int i = 0; i < 8; i++)
+                            {
+                                Vector3 cornerPosition = voxelPosition + Constants.CornerTable[i];
+                                DrawGizmo(cornerPosition, cubeCornerVals[i]);
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            {
+                Vector3 position = GetTransformPosition();
+                for (int i = 0; i < 8; i++)
+                {
+                    Vector3 cornerPosition = position + Constants.CornerTable[i];
+                    DrawGizmo(cornerPosition, cubeCornerVals[i]);
+                }
+            }
+        }
     }
 }
