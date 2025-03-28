@@ -9,8 +9,8 @@ public class ChunkGenerator : MonoBehaviour
     public int worldSeed = 1;
 
     //Perlin Noise Settings
-    [Range(0f, 20f)] public float scale = 16f; //for terrain generation
-	public int octaves = 4; //for terrain generation
+    [Range(0f, 100f)] public float scale = 16f; //for terrain generation
+	[Range(1, 10)] public int octaves = 4; //for terrain generation
 	public float persistance = 0.3f; //for terrain generation
 	public float lacunarity = 2.3f; //for terrain generation
 
@@ -26,7 +26,11 @@ public class ChunkGenerator : MonoBehaviour
     //Marching Cube Settings
     public bool smoothTerrain; //Toggle for smoothing terrain
     public bool flatShaded; //Toggle for triangles sharing points for rendering
-    public bool useLists = true; // Toggle between list-based and array-based storage
+    public bool useLists = true; //Toggle between list-based and array-based storage
+	public bool debugChunkWireframe = true; //Draw chunk bounding wireframe when chunk is selected
+	public bool debugChunkWireframePersistance = false; //Draw chunk bounding wireframe even when chunk is not selected
+	public bool debugChunkVoxelVal = true; //Draw grayscale sphere gizmos when chunk is selected
+	public bool debugChunkVoxelValPersistance = false; //Draw grayscale sphere gizmos even when chunk is notselected
 
     List<Vector3> verticesList = new List<Vector3>();
 	List<int> trianglesList = new List<int>();
@@ -272,45 +276,76 @@ public class ChunkGenerator : MonoBehaviour
     }
 
     // Draw Gizmos for each cube corner with grayscale based on value
-    /*
+    
 	void OnDrawGizmos()
 	{
-		if (cube == null || CornerTable == null)
-			return;
+		if (debugChunkWireframePersistance)
+    	{
+			//Draw even when object is not selected in scene view
+        	DrawChunkBounds();
+    	}
+		
+		if (debugChunkVoxelValPersistance)
+    	{
+			//Draw even when object is not selected in scene view
+        	DrawChunkVoxelVal();
+    	}
+	}
+    
+	
+	void OnDrawGizmosSelected()
+	{
+		
+		if (debugChunkWireframe) //Draw bounds when selected
+    	{
+			DrawChunkBounds();
+		}
+		if (debugChunkVoxelVal) //Draw spheres when selected
+    	{
+			DrawChunkVoxelVal();
+		}
+	}
 
-		if (generateChunk)
+	//Debug grayscale spheres on voxel coordinates based on terrainMap array values
+	void DrawChunkVoxelVal()
+	{
+		if (terrainMap == null)
+        return;
+
+		Gizmos.color = Color.white;
+
+		for (int x = 0; x < width + 1; x++)
 		{
-			for (int x = 0; x < chunkSize; x++)
+			for (int y = 0; y < height + 1; y++)
 			{
-				for (int y = 0; y < chunkSize; y++)
+				for (int z = 0; z < width + 1; z++)
 				{
-					for (int z = 0; z < chunkSize; z++)
-					{
-						Vector3 voxelPosition = new Vector3(x, y, z);
-						for (int i = 0; i < 8; i++)
-						{
-							Vector3 cornerPosition = voxelPosition + CornerTable[i];
-							float intensity = Mathf.Clamp01(cube[i]);
-							Gizmos.color = new Color(intensity, intensity, intensity);
-							Gizmos.DrawSphere(cornerPosition, 0.1f);
-						}
-					}
+					float val = terrainMap[x, y, z];
+
+					// Convert the scalar value to a grayscale color.
+					float intensity = Mathf.Clamp01(val); // assumes values roughly between 0–1
+					Gizmos.color = new Color(intensity, intensity, intensity);
+
+					// Offset by the chunk's world position
+					Vector3 position = new Vector3(x, y, z) + transform.position;
+					Gizmos.DrawSphere(position, 0.1f); // Small sphere at the grid point
 				}
 			}
 		}
-		else
-		{
-			Vector3 position = transform.position;
-			for (int i = 0; i < 8; i++)
-			{
-				Vector3 cornerPosition = position + CornerTable[i];
-				float intensity = Mathf.Clamp01(cube_corner_vals[i]);
-				Gizmos.color = new Color(intensity, intensity, intensity);
-				Gizmos.DrawSphere(cornerPosition, 0.1f);
-			}
-		}
 	}
-    */
+
+	//Debug wireframe cube around chunk boundary
+	void DrawChunkBounds()
+	{
+		Gizmos.color = Color.yellow;
+
+		// Define the size and position of the bounding box
+		Vector3 center = new Vector3(width / 2f, height / 2f, width / 2f) + transform.position;
+		Vector3 size = new Vector3(width, height, width);
+
+		Gizmos.DrawWireCube(center, size);
+	}
+
 
 	Vector3Int[] CornerTable = new Vector3Int[8] {
 
