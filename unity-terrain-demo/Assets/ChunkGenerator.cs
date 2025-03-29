@@ -25,12 +25,12 @@ public class ChunkGenerator : MonoBehaviour
 
     //Marching Cube Settings
     public bool smoothTerrain; //Toggle for smoothing terrain
-    public bool flatShaded; //Toggle for triangles sharing points for rendering
+    public bool flatShaded = true; //Toggle for triangles sharing points for rendering
     public bool useLists = true; //Toggle between list-based and array-based storage
 	public bool debugChunkWireframe = true; //Draw chunk bounding wireframe when chunk is selected
-	public bool debugChunkWireframePersistance = false; //Draw chunk bounding wireframe even when chunk is not selected
+	public bool debugChunkWireframePersistence = false; //Draw chunk bounding wireframe even when chunk is not selected
 	public bool debugChunkVoxelVal = true; //Draw grayscale sphere gizmos when chunk is selected
-	public bool debugChunkVoxelValPersistance = false; //Draw grayscale sphere gizmos even when chunk is notselected
+	public bool debugChunkVoxelValPersistence = false; //Draw grayscale sphere gizmos even when chunk is notselected
 
     List<Vector3> verticesList = new List<Vector3>();
 	List<int> trianglesList = new List<int>();
@@ -47,6 +47,7 @@ public class ChunkGenerator : MonoBehaviour
         meshCollider = GetComponent<MeshCollider>();
         terrainMap = new float[width + 1, height + 1, width + 1];
         PopulateTerrainMap();
+		//ClearMeshData();
         CreateMeshData();
     }
 
@@ -92,7 +93,7 @@ public class ChunkGenerator : MonoBehaviour
 
     //Configurable Perlin Noise sampler
 	public float GetTerrianHeight(int x, int z, float scale, int octaves, float persistance, float lacunarity, int worldSeed)
-{
+	{
     System.Random prng = new System.Random(worldSeed);
     int offsetX = prng.Next(int.MinValue, int.MaxValue); //To be added as an offset to the sampled points
     int offsetZ = prng.Next(int.MinValue, int.MaxValue);
@@ -115,12 +116,18 @@ public class ChunkGenerator : MonoBehaviour
     }
 
     return (float)TerrainHeightRange * noiseHeight + BaseTerrainHeight;
-}
+	}
 
     void ClearMeshData()
     {
 		verticesList.Clear();
 		trianglesList.Clear();
+
+		int maxVertices = width * width * height * 15; //max 5 triangles per voxel, 3 points each
+		verticesArray = new Vector3[maxVertices]; // Adjust preallocation size
+		trianglesArray = new int[maxVertices * 3];
+		vertexCount = 0;
+		triangleCount = 0;
 	}
 
     void CreateMeshData()
@@ -176,6 +183,7 @@ public class ChunkGenerator : MonoBehaviour
             {
 				if (!useLists)
 					if (edgeIndex >= trianglesArray.Length || edgeIndex >= verticesArray.Length)
+						//Debug.Log("HERE");
 						return; // Prevent out-of-bounds exception
 
 				// Get the current indice. We increment triangleIndex through each loop.
@@ -221,8 +229,15 @@ public class ChunkGenerator : MonoBehaviour
 				// Add to our vertices and triangles list and incremement the edgeIndex.
 				if (useLists)
 				{
-					verticesList.Add(vertPosition);
-					trianglesList.Add(verticesList.Count - 1);
+					if (flatShaded)
+					{
+						verticesList.Add(vertPosition);
+						trianglesList.Add(verticesList.Count - 1);
+					}
+					else
+					{
+						trianglesList.Add(VertListForIndice(vertPosition));
+					}
 				}
 				else
 				{
@@ -240,6 +255,23 @@ public class ChunkGenerator : MonoBehaviour
 
 			}
         }
+    }
+
+	int VertListForIndice (Vector3 vert) {
+
+        // Loop through all the vertices currently in the vertices list.
+        for (int i = 0; i < verticesList.Count; i++) {
+
+            // If we find a vert that matches ours, then simply return this index.
+            if (verticesList[i] == vert)
+                return i;
+
+        }
+
+        // If we didn't find a match, add this vert to the list and return last index.
+        verticesList.Add(vert);
+        return verticesList.Count - 1;
+
     }
 
     // Helper function to find corner index from position
@@ -279,13 +311,13 @@ public class ChunkGenerator : MonoBehaviour
     
 	void OnDrawGizmos()
 	{
-		if (debugChunkWireframePersistance)
+		if (debugChunkWireframePersistence)
     	{
 			//Draw even when object is not selected in scene view
         	DrawChunkBounds();
     	}
 		
-		if (debugChunkVoxelValPersistance)
+		if (debugChunkVoxelValPersistence)
     	{
 			//Draw even when object is not selected in scene view
         	DrawChunkVoxelVal();

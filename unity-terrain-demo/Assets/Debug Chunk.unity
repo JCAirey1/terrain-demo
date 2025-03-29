@@ -260,12 +260,12 @@ MonoBehaviour:
   BaseTerrainHeight: 16
   TerrainHeightRange: 12
   smoothTerrain: 0
-  flatShaded: 0
-  useLists: 1
+  flatShaded: 1
+  useLists: 0
   debugChunkWireframe: 1
-  debugChunkWireframePersistance: 0
+  debugChunkWireframePersistence: 0
   debugChunkVoxelVal: 1
-  debugChunkVoxelValPersistance: 0
+  debugChunkVoxelValPersistence: 0
 --- !u!23 &452417677
 MeshRenderer:
   m_ObjectHideFlags: 0
