@@ -11,6 +11,7 @@ Logs/
 Library/
 **/Assets/CommonLib/
 **/Assets/Scripts/
+.vscode/
 
 # Recordings can get excessive in size
 /[Rr]ecordings/
