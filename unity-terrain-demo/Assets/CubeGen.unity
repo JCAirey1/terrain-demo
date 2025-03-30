@@ -166,23 +166,23 @@ MonoBehaviour:
   m_GameObject: {fileID: 506725021}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 02ace1960e7152a4b8000b81abd55e9e, type: 3}
+  m_Script: {fileID: 11500000, guid: ccd08580c7b7ce04dae8d8a2ab408114, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   iso_val: 0.5
   useLists: 1
-  generateChunk: 1
+  generateChunk: 0
   useManualCornerValues: 1
-  chunkSize: 1
+  chunkSize: 8
   perlinScale: 0.1
   smoothTerrain: 0
-  cube_corner_val0: 0.786
-  cube_corner_val1: 1
-  cube_corner_val2: 1
-  cube_corner_val3: 0.823
-  cube_corner_val4: 0.86
-  cube_corner_val5: 0.786
-  cube_corner_val6: 0.833
+  cube_corner_val0: 0
+  cube_corner_val1: 0
+  cube_corner_val2: 0
+  cube_corner_val3: 0
+  cube_corner_val4: 0
+  cube_corner_val5: 0
+  cube_corner_val6: 0
   cube_corner_val7: 0
 --- !u!23 &506725024
 MeshRenderer:
