@@ -47,7 +47,8 @@ public class ChunkGenerator : MonoBehaviour
         meshCollider = GetComponent<MeshCollider>();
         terrainMap = new float[width + 1, height + 1, width + 1];
         PopulateTerrainMap();
-		//ClearMeshData();
+		verticesArray = new Vector3[width * width * height * 15]; //max 5 triangles per voxel, 3 points each
+		trianglesArray = new int[width * width * height * 5]; //max 5 triangles per voxel
         CreateMeshData();
     }
 
@@ -122,10 +123,8 @@ public class ChunkGenerator : MonoBehaviour
     {
 		verticesList.Clear();
 		trianglesList.Clear();
-
-		int maxVertices = width * width * height * 15; //max 5 triangles per voxel, 3 points each
-		verticesArray = new Vector3[maxVertices]; // Adjust preallocation size
-		trianglesArray = new int[maxVertices * 3];
+		verticesArray = new Vector3[width * width * height * 15]; //max 5 triangles per voxel, 3 points each
+		trianglesArray = new int[width * width * height * 5]; //max 5 triangles per voxel
 		vertexCount = 0;
 		triangleCount = 0;
 	}
@@ -152,8 +151,8 @@ public class ChunkGenerator : MonoBehaviour
 	void BuildMesh()
     {
 		Mesh mesh = new Mesh();
-		mesh.vertices = verticesList.ToArray();
-		mesh.triangles = trianglesList.ToArray();
+		mesh.vertices = useLists ? verticesList.ToArray() : verticesArray[..vertexCount];
+		mesh.triangles = useLists ? trianglesList.ToArray() : trianglesArray[..triangleCount];
 		mesh.RecalculateNormals();
 		meshFilter.mesh = mesh;
 		meshCollider.sharedMesh = mesh;
@@ -183,8 +182,9 @@ public class ChunkGenerator : MonoBehaviour
             {
 				if (!useLists)
 					if (edgeIndex >= trianglesArray.Length || edgeIndex >= verticesArray.Length)
-						//Debug.Log("HERE");
+					{
 						return; // Prevent out-of-bounds exception
+					}
 
 				// Get the current indice. We increment triangleIndex through each loop.
 				int indice = TriangleTable[configIndex, edgeIndex];
@@ -226,6 +226,7 @@ public class ChunkGenerator : MonoBehaviour
 					// Default to center point of the edge
 					vertPosition = (vert1 + vert2) / 2f;
 				}
+
 				// Add to our vertices and triangles list and incremement the edgeIndex.
 				if (useLists)
 				{

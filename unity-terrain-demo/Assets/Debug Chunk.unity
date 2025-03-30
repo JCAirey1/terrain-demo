@@ -261,7 +261,7 @@ MonoBehaviour:
   TerrainHeightRange: 12
   smoothTerrain: 0
   flatShaded: 1
-  useLists: 0
+  useLists: 1
   debugChunkWireframe: 1
   debugChunkWireframePersistence: 0
   debugChunkVoxelVal: 1
