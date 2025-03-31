@@ -3,7 +3,7 @@ using UnityEngine;
 using System.Diagnostics;
 using TerrainDemo;
 
-public class CubeGeneratorScript : MonoBehaviour
+public class DebugCubeScript : MonoBehaviour
 {
     MeshFilter meshFilter;
     [Range(0f, 1f)] public float iso_val = 0.5f; // Isosurface Value, surface that represents points of a constant value
@@ -34,6 +34,7 @@ public class CubeGeneratorScript : MonoBehaviour
 
     // Create an array of floats representing each corner of a cube and get the value from our terrainMap.
     float[] cube_corner_vals = new float[8];
+
 
     // Start is called before the first frame update
     void Start()
