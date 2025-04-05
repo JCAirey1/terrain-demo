@@ -14,6 +14,7 @@ public class DebugCubeScript : MonoBehaviour
     [Range(1, 16)] public int chunkSize = 8; // Define chunk size
     public float perlinScale = 0.1f; // Scale for Perlin noise terrain generation
     public bool smoothTerrain = false; // Toggle for smoothing terrain
+    [Range(1, 10)] public int unitSize = 1; // Define chunk size
 
     List<Vector3> verticesList = new List<Vector3>();
     List<int> trianglesList = new List<int>();
@@ -74,12 +75,28 @@ public class DebugCubeScript : MonoBehaviour
                         {
                             if (useManualCornerValues)
                             {
-                                cube_corner_vals = new float[] { cube_corner_val0, cube_corner_val1, cube_corner_val2, cube_corner_val3, cube_corner_val4, cube_corner_val5, cube_corner_val6, cube_corner_val7 };
+                                //cube_corner_vals = new float[] { cube_corner_val0, cube_corner_val1, cube_corner_val2, cube_corner_val3, cube_corner_val4, cube_corner_val5, cube_corner_val6, cube_corner_val7 };
+                                cube_corner_vals[0] = cube_corner_val0;
+                                cube_corner_vals[1] = cube_corner_val1;
+                                cube_corner_vals[2] = cube_corner_val2;
+                                cube_corner_vals[3] = cube_corner_val3;
+                                cube_corner_vals[4] = cube_corner_val4;
+                                cube_corner_vals[5] = cube_corner_val5;
+                                cube_corner_vals[6] = cube_corner_val6;
+                                cube_corner_vals[7] = cube_corner_val7;
                             }
                             else
                             {
                                 float terrainValue = y < height ? 1f : 0f;
-                                cube_corner_vals = new float[] { terrainValue, terrainValue, terrainValue, terrainValue, terrainValue, terrainValue, terrainValue, terrainValue };
+                                //cube_corner_vals = new float[] { terrainValue, terrainValue, terrainValue, terrainValue, terrainValue, terrainValue, terrainValue, terrainValue };
+                                cube_corner_vals[0] = terrainValue;
+                                cube_corner_vals[1] = terrainValue;
+                                cube_corner_vals[2] = terrainValue;
+                                cube_corner_vals[3] = terrainValue;
+                                cube_corner_vals[4] = terrainValue;
+                                cube_corner_vals[5] = terrainValue;
+                                cube_corner_vals[6] = terrainValue;
+                                cube_corner_vals[7] = terrainValue;
                             }
                             GenerateVoxel(new Vector3(x, y, z), cube_corner_vals[0]);
                         }
@@ -90,12 +107,28 @@ public class DebugCubeScript : MonoBehaviour
             {
                 if (useManualCornerValues)
                 {
-                    cube_corner_vals = new float[] { cube_corner_val0, cube_corner_val1, cube_corner_val2, cube_corner_val3, cube_corner_val4, cube_corner_val5, cube_corner_val6, cube_corner_val7 };
+                    //cube_corner_vals = new float[] { cube_corner_val0, cube_corner_val1, cube_corner_val2, cube_corner_val3, cube_corner_val4, cube_corner_val5, cube_corner_val6, cube_corner_val7 };
+                    cube_corner_vals[0] = cube_corner_val0;
+                    cube_corner_vals[1] = cube_corner_val1;
+                    cube_corner_vals[2] = cube_corner_val2;
+                    cube_corner_vals[3] = cube_corner_val3;
+                    cube_corner_vals[4] = cube_corner_val4;
+                    cube_corner_vals[5] = cube_corner_val5;
+                    cube_corner_vals[6] = cube_corner_val6;
+                    cube_corner_vals[7] = cube_corner_val7;
                 }
                 else
                 {
                     float terrainValue = Mathf.PerlinNoise(0, 0); // Default Perlin noise for single voxel
-                    cube_corner_vals = new float[] { terrainValue, terrainValue, terrainValue, terrainValue, terrainValue, terrainValue, terrainValue, terrainValue };
+                    //cube_corner_vals = new float[] { terrainValue, terrainValue, terrainValue, terrainValue, terrainValue, terrainValue, terrainValue, terrainValue };
+                    cube_corner_vals[0] = terrainValue;
+                    cube_corner_vals[1] = terrainValue;
+                    cube_corner_vals[2] = terrainValue;
+                    cube_corner_vals[3] = terrainValue;
+                    cube_corner_vals[4] = terrainValue;
+                    cube_corner_vals[5] = terrainValue;
+                    cube_corner_vals[6] = terrainValue;
+                    cube_corner_vals[7] = terrainValue;
                 }
                 GenerateVoxel(Vector3.zero, cube_corner_vals[0]);
             }
@@ -231,8 +264,14 @@ public class DebugCubeScript : MonoBehaviour
         else
         {
             int maxVertices = chunkSize * chunkSize * chunkSize * 15;
-            verticesArray = new Vector3[maxVertices]; // Adjust preallocation size
-            trianglesArray = new int[maxVertices * 3];
+
+            // Only reallocate if needed
+            if (verticesArray == null || verticesArray.Length < maxVertices)
+            {
+                verticesArray = new Vector3[maxVertices];
+                trianglesArray = new int[maxVertices * 3];
+            }
+
             vertexCount = 0;
             triangleCount = 0;
         }
