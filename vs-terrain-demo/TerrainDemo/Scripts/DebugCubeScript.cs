@@ -14,7 +14,8 @@ public class DebugCubeScript : MonoBehaviour
     [Range(1, 16)] public int chunkSize = 8; // Define chunk size
     public float perlinScale = 0.1f; // Scale for Perlin noise terrain generation
     public bool smoothTerrain = false; // Toggle for smoothing terrain
-    [Range(1, 10)] public int unitSize = 1; // Define chunk size
+    [Range(1, 10)] public int unitSize = 1; // Define unit size
+    [Range(1, 10)] public int unitScale = 1; // Define unit scale
 
     List<Vector3> verticesList = new List<Vector3>();
     List<int> trianglesList = new List<int>();
@@ -198,8 +199,8 @@ public class DebugCubeScript : MonoBehaviour
                     return;
 
                 // Get the vertices for the start and end of this edge.
-                Vector3 vert1 = position + Constants.EdgeTable[indice, 0];
-                Vector3 vert2 = position + Constants.EdgeTable[indice, 1];
+                Vector3 vert1 = position + (Constants.EdgeTable[indice, 0] * unitSize * unitScale);
+                Vector3 vert2 = position + (Constants.EdgeTable[indice, 1] * unitSize * unitScale);
 
                 // Get the midpoint of this edge.
                 Vector3 vertPosition;
@@ -303,7 +304,7 @@ public class DebugCubeScript : MonoBehaviour
                         Vector3 voxelPosition = new Vector3(x, y, z);
                         for (int i = 0; i < 8; i++)
                         {
-                            Vector3 cornerPosition = voxelPosition + Constants.CornerTable[i];
+                            Vector3 cornerPosition = voxelPosition + (Constants.CornerTable[i] * unitSize * unitScale);
                             float intensity = Mathf.Clamp01(cube_corner_vals[i]);
                             Gizmos.color = new Color(intensity, intensity, intensity);
                             Gizmos.DrawSphere(cornerPosition, 0.1f);
@@ -315,9 +316,10 @@ public class DebugCubeScript : MonoBehaviour
         else
         {
             Vector3 position = transform.position;
+
             for (int i = 0; i < 8; i++)
             {
-                Vector3 cornerPosition = position + Constants.CornerTable[i];
+                Vector3 cornerPosition = position + (Constants.CornerTable[i] * unitSize * unitScale);
                 float intensity = Mathf.Clamp01(cube_corner_vals[i]);
                 Gizmos.color = new Color(intensity, intensity, intensity);
                 Gizmos.DrawSphere(cornerPosition, 0.1f);
