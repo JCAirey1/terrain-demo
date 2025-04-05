@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 using System.Diagnostics;
 using TerrainDemo;
@@ -35,62 +36,79 @@ public class DebugCubeScript : MonoBehaviour
     // Create an array of floats representing each corner of a cube and get the value from our terrainMap.
     float[] cube_corner_vals = new float[8];
 
+    public TerrainDemo.Logger MyLogger { get; } = new TerrainDemo.Logger();
 
     // Start is called before the first frame update
     void Start()
     {
-        meshFilter = GetComponent<MeshFilter>();
-        ClearMeshData();
-        cube_corner_vals = new float[8]; //Set to zero
+        try
+        {
+            MyLogger.LogInfo("Starting DebugCubeScript");
+
+            meshFilter = GetComponent<MeshFilter>();
+            ClearMeshData();
+            cube_corner_vals = new float[8]; //Set to zero
+        } 
+        catch (Exception ex)
+        {
+            MyLogger.LogError(ex);
+        }
     }
 
     // Update is called once per frame
     void Update()
     {
-        Stopwatch stopwatch = Stopwatch.StartNew();
-        ClearMeshData();
-
-        if (generateChunk)
+        try
         {
-            for (int x = 0; x < chunkSize; x++)
+            Stopwatch stopwatch = Stopwatch.StartNew();
+            ClearMeshData();
+
+            if (generateChunk)
             {
-                for (int z = 0; z < chunkSize; z++)
+                for (int x = 0; x < chunkSize; x++)
                 {
-                    float height = Mathf.PerlinNoise(x * perlinScale, z * perlinScale) * chunkSize;
-                    for (int y = 0; y < chunkSize; y++)
+                    for (int z = 0; z < chunkSize; z++)
                     {
-                        if (useManualCornerValues)
+                        float height = Mathf.PerlinNoise(x * perlinScale, z * perlinScale) * chunkSize;
+                        for (int y = 0; y < chunkSize; y++)
                         {
-                            cube_corner_vals = new float[] { cube_corner_val0, cube_corner_val1, cube_corner_val2, cube_corner_val3, cube_corner_val4, cube_corner_val5, cube_corner_val6, cube_corner_val7 };
+                            if (useManualCornerValues)
+                            {
+                                cube_corner_vals = new float[] { cube_corner_val0, cube_corner_val1, cube_corner_val2, cube_corner_val3, cube_corner_val4, cube_corner_val5, cube_corner_val6, cube_corner_val7 };
+                            }
+                            else
+                            {
+                                float terrainValue = y < height ? 1f : 0f;
+                                cube_corner_vals = new float[] { terrainValue, terrainValue, terrainValue, terrainValue, terrainValue, terrainValue, terrainValue, terrainValue };
+                            }
+                            GenerateVoxel(new Vector3(x, y, z), cube_corner_vals[0]);
                         }
-                        else
-                        {
-                            float terrainValue = y < height ? 1f : 0f;
-                            cube_corner_vals = new float[] { terrainValue, terrainValue, terrainValue, terrainValue, terrainValue, terrainValue, terrainValue, terrainValue };
-                        }
-                        GenerateVoxel(new Vector3(x, y, z), cube_corner_vals[0]);
                     }
                 }
             }
-        }
-        else
-        {
-            if (useManualCornerValues)
-            {
-                cube_corner_vals = new float[] { cube_corner_val0, cube_corner_val1, cube_corner_val2, cube_corner_val3, cube_corner_val4, cube_corner_val5, cube_corner_val6, cube_corner_val7 };
-            }
             else
             {
-                float terrainValue = Mathf.PerlinNoise(0, 0); // Default Perlin noise for single voxel
-                cube_corner_vals = new float[] { terrainValue, terrainValue, terrainValue, terrainValue, terrainValue, terrainValue, terrainValue, terrainValue };
+                if (useManualCornerValues)
+                {
+                    cube_corner_vals = new float[] { cube_corner_val0, cube_corner_val1, cube_corner_val2, cube_corner_val3, cube_corner_val4, cube_corner_val5, cube_corner_val6, cube_corner_val7 };
+                }
+                else
+                {
+                    float terrainValue = Mathf.PerlinNoise(0, 0); // Default Perlin noise for single voxel
+                    cube_corner_vals = new float[] { terrainValue, terrainValue, terrainValue, terrainValue, terrainValue, terrainValue, terrainValue, terrainValue };
+                }
+                GenerateVoxel(Vector3.zero, cube_corner_vals[0]);
             }
-            GenerateVoxel(Vector3.zero, cube_corner_vals[0]);
+
+            BuildMesh();
+
+            stopwatch.Stop();
+            //UnityEngine.Debug.Log($"Execution Time ({(useLists ? "Lists" : "Arrays")}): {stopwatch.ElapsedMilliseconds} ms");
         }
-
-        BuildMesh();
-
-        stopwatch.Stop();
-        //UnityEngine.Debug.Log($"Execution Time ({(useLists ? "Lists" : "Arrays")}): {stopwatch.ElapsedMilliseconds} ms");
+        catch (Exception ex)
+        {
+            MyLogger.LogError(ex);
+        }
     }
 
     void GenerateVoxel(Vector3 position, float terrainValue)

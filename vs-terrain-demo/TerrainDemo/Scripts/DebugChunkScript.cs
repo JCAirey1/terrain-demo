@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.IO;
+using System.Collections.Generic;
 using UnityEngine;
 using TerrainDemo;
 
@@ -40,26 +42,43 @@ public class DebugChunkScript : MonoBehaviour
     int vertexCount = 0;
     int triangleCount = 0;
 
+    public TerrainDemo.Logger MyLogger { get; } = new TerrainDemo.Logger();
+
     // Start is called before the first frame update
     void Start()
     {
-        meshFilter = GetComponent<MeshFilter>();
-        meshCollider = GetComponent<MeshCollider>();
-        terrainMap = new float[width + 1, height + 1, width + 1];
-        PopulateTerrainMap();
-        verticesArray = new Vector3[width * width * height * 15]; //max 5 triangles per voxel, 3 points each
-        trianglesArray = new int[width * width * height * 5]; //max 5 triangles per voxel
-        CreateMeshData();
+        try
+        {
+            MyLogger.LogInfo("Starting DebugChunkScript");
+
+            meshFilter = GetComponent<MeshFilter>();
+            meshCollider = GetComponent<MeshCollider>();
+            terrainMap = new float[width + 1, height + 1, width + 1];
+            PopulateTerrainMap();
+            verticesArray = new Vector3[width * width * height * 15]; //max 5 triangles per voxel, 3 points each
+            trianglesArray = new int[width * width * height * 5]; //max 5 triangles per voxel
+            CreateMeshData();
+        }
+        catch (Exception ex)
+        {
+            MyLogger.LogError(ex);
+        }
     }
 
     // Update is called once per frame
     void Update()
     {
-        terrainMap = new float[width + 1, height + 1, width + 1];
-        PopulateTerrainMap();
-        ClearMeshData();
-        CreateMeshData();
-        BuildMesh();
+        try {
+            terrainMap = new float[width + 1, height + 1, width + 1];
+            PopulateTerrainMap();
+            ClearMeshData();
+            CreateMeshData();
+            BuildMesh();
+        }
+        catch (Exception ex)
+        {
+            MyLogger.LogError(ex);
+        }
     }
 
     //Basic Perlin Noise sampler

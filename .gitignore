@@ -12,6 +12,8 @@ Library/
 **/Assets/CommonLib/
 **/Assets/Scripts/
 .vscode/
+packages/
+.vsconfig
 
 # Recordings can get excessive in size
 /[Rr]ecordings/
