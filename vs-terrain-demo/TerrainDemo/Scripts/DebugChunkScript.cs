@@ -71,7 +71,6 @@ public class DebugChunkScript : MonoBehaviour
         try {
             terrainMap = new float[width + 1, height + 1, width + 1];
             PopulateTerrainMap();
-            ClearMeshData();
             CreateMeshData();
             BuildMesh();
         }
