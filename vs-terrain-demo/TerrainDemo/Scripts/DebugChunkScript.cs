@@ -11,7 +11,8 @@ public class DebugChunkScript : MonoBehaviour
     public int worldSeed = 1;
 
     //Perlin Noise Settings
-    [Range(0f, 100f)] public float scale = 16f; //for terrain generation
+    public bool noise2D = true; //True for 2D Perlin Noise, false for 3D Perlin Noise
+    public float scale = 16f; //for terrain generation
     [Range(1, 10)] public int octaves = 4; //for terrain generation
     public float persistance = 0.3f; //for terrain generation
     public float lacunarity = 2.3f; //for terrain generation
@@ -68,7 +69,8 @@ public class DebugChunkScript : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        try {
+        try
+        {
             terrainMap = new float[width + 1, height + 1, width + 1];
             PopulateTerrainMap();
             CreateMeshData();
@@ -97,14 +99,33 @@ public class DebugChunkScript : MonoBehaviour
             {
                 for (int z = 0; z < width + 1; z++)
                 {
-                    //Using clamp to bound PerlinNoise as it intends to return a value 0.0f-1.0f but may sometimes be slightly out of that range
-                    //Multipying by height will return a value in the range of 0-height
-                    float thisHeight = GetTerrianHeight(x + _position.x, z + _position.z, scale, octaves, persistance, lacunarity, worldSeed);
+                    if (noise2D)
+                    {
+                        //Using clamp to bound PerlinNoise as it intends to return a value 0.0f-1.0f but may sometimes be slightly out of that range
+                        //Multipying by height will return a value in the range of 0-height
+                        float thisHeight = GetTerrianHeight(x + _position.x, z + _position.z, scale, octaves, persistance, lacunarity, worldSeed);
+
+                        //y points below thisHeight will be negative (below terrain) and y points above this Height will be positve and will render 
+                        terrainMap[x, y, z] = (float)y - thisHeight;
+                    }
+                    else if (!noise2D)
+                    {
+
+                        //3D Perlin Noise Function
+                        float noiseValue = GetTerrianHeight3D(x + _position.x, y + _position.y, z + _position.z, scale, octaves, persistance, lacunarity, worldSeed);
+
+                        //need to adjust parameters (namely Base Terrain Height) to visualize result. Removed notion of thisHeight which is purely surface level thinking
+                        terrainMap[x, y, z] = noiseValue;
+                    }
+                    else
+                    {
+                        Debug.Log("UNEXPECTED ERROR WITH NOISE FUNCITON SELECTION");
+                        return;
+                    }
+
+                    //Hard Coded Initial Noise Generation
                     //float thisHeight = (float)height * Mathf.PerlinNoise((float)x / 16f * 1.5f + 0.001f, (float)z / 16f * 1.5f + 0.001f);
                     //float thisHeight = (float)height * Mathf.PerlinNoise((float)x / scale * 1.5f + 0.001f, (float)z / scale * 1.5f + 0.001f);
-
-                    //y points below thisHeight will be negative (below terrain) and y points above this Height will be positve and will render 
-                    terrainMap[x, y, z] = (float)y - thisHeight;
                 }
             }
         }
@@ -128,6 +149,41 @@ public class DebugChunkScript : MonoBehaviour
             float sampleZ = z / scale * frequency + (float)worldSeed;
 
             perlinValue = Mathf.Clamp(Mathf.PerlinNoise(sampleX, sampleZ), 0.0f, 1.0f);
+            noiseHeight += perlinValue * amplitude;
+
+            amplitude *= persistance;
+            frequency *= lacunarity;
+        }
+
+        return (float)TerrainHeightRange * noiseHeight + BaseTerrainHeight;
+    }
+
+    //3D Perlin Noise Alternative Noise Function
+    public float GetTerrianHeight3D(int x, int y, int z, float scale, int octaves, float persistance, float lacunarity, int worldSeed)
+    {
+        System.Random prng = new System.Random(worldSeed);
+        int offsetX = prng.Next(int.MinValue, int.MaxValue); //To be added as an offset to the sampled points
+        int offsetY = prng.Next(int.MinValue, int.MaxValue);
+        int offsetZ = prng.Next(int.MinValue, int.MaxValue);
+
+        float amplitude = 1f;
+        float frequency = 1.5f;
+        float noiseHeight = 0f;
+
+        for (int i = 0; i < octaves; i++)
+        {
+            float sampleX = x / scale * frequency + (float)worldSeed; //not working with offsetX, using worldSeed directly for now
+            float sampleY = y / scale * frequency + (float)worldSeed;
+            float sampleZ = z / scale * frequency + (float)worldSeed;
+
+            // Fake 3D Perlin noise by combining 2D noise samples
+            float perlinXY = Mathf.PerlinNoise(sampleX, sampleY);
+            float perlinXZ = Mathf.PerlinNoise(sampleX, sampleZ);
+            float perlinYZ = Mathf.PerlinNoise(sampleY, sampleZ);
+
+            // Average the samples
+            float perlinValue = (perlinXY + perlinXZ + perlinYZ) / 3f;
+
             noiseHeight += perlinValue * amplitude;
 
             amplitude *= persistance;
