@@ -6,12 +6,12 @@ using TerrainDemo;
 
 public class DebugCubeScript : MonoBehaviour
 {
+    const int MAXVERTICES = 15;
+
     MeshFilter meshFilter;
     [Range(0f, 1f)] public float iso_val = 0.5f; // Isosurface Value, surface that represents points of a constant value
     public bool useLists = true; // Toggle between list-based and array-based storage
-    public bool generateChunk = false; // Toggle to generate a chunk of voxels
     public bool useManualCornerValues = true; // Toggle between manual corner values and Perlin noise
-    [Range(1, 16)] public int chunkSize = 8; // Define chunk size
     public float perlinScale = 0.1f; // Scale for Perlin noise terrain generation
     public bool smoothTerrain = false; // Toggle for smoothing terrain
     [Range(1, 10)] public int unitSize = 1; // Define unit size
@@ -65,74 +65,32 @@ public class DebugCubeScript : MonoBehaviour
             Stopwatch stopwatch = Stopwatch.StartNew();
             ClearMeshData();
 
-            if (generateChunk)
+            if (useManualCornerValues)
             {
-                for (int x = 0; x < chunkSize; x++)
-                {
-                    for (int z = 0; z < chunkSize; z++)
-                    {
-                        float height = Mathf.PerlinNoise(x * perlinScale, z * perlinScale) * chunkSize;
-                        for (int y = 0; y < chunkSize; y++)
-                        {
-                            if (useManualCornerValues)
-                            {
-                                //cube_corner_vals = new float[] { cube_corner_val0, cube_corner_val1, cube_corner_val2, cube_corner_val3, cube_corner_val4, cube_corner_val5, cube_corner_val6, cube_corner_val7 };
-                                cube_corner_vals[0] = cube_corner_val0;
-                                cube_corner_vals[1] = cube_corner_val1;
-                                cube_corner_vals[2] = cube_corner_val2;
-                                cube_corner_vals[3] = cube_corner_val3;
-                                cube_corner_vals[4] = cube_corner_val4;
-                                cube_corner_vals[5] = cube_corner_val5;
-                                cube_corner_vals[6] = cube_corner_val6;
-                                cube_corner_vals[7] = cube_corner_val7;
-                            }
-                            else
-                            {
-                                float terrainValue = y < height ? 1f : 0f;
-                                //cube_corner_vals = new float[] { terrainValue, terrainValue, terrainValue, terrainValue, terrainValue, terrainValue, terrainValue, terrainValue };
-                                cube_corner_vals[0] = terrainValue;
-                                cube_corner_vals[1] = terrainValue;
-                                cube_corner_vals[2] = terrainValue;
-                                cube_corner_vals[3] = terrainValue;
-                                cube_corner_vals[4] = terrainValue;
-                                cube_corner_vals[5] = terrainValue;
-                                cube_corner_vals[6] = terrainValue;
-                                cube_corner_vals[7] = terrainValue;
-                            }
-                            GenerateVoxel(new Vector3(x, y, z), cube_corner_vals[0]);
-                        }
-                    }
-                }
+                //cube_corner_vals = new float[] { cube_corner_val0, cube_corner_val1, cube_corner_val2, cube_corner_val3, cube_corner_val4, cube_corner_val5, cube_corner_val6, cube_corner_val7 };
+                cube_corner_vals[0] = cube_corner_val0;
+                cube_corner_vals[1] = cube_corner_val1;
+                cube_corner_vals[2] = cube_corner_val2;
+                cube_corner_vals[3] = cube_corner_val3;
+                cube_corner_vals[4] = cube_corner_val4;
+                cube_corner_vals[5] = cube_corner_val5;
+                cube_corner_vals[6] = cube_corner_val6;
+                cube_corner_vals[7] = cube_corner_val7;
             }
             else
             {
-                if (useManualCornerValues)
-                {
-                    //cube_corner_vals = new float[] { cube_corner_val0, cube_corner_val1, cube_corner_val2, cube_corner_val3, cube_corner_val4, cube_corner_val5, cube_corner_val6, cube_corner_val7 };
-                    cube_corner_vals[0] = cube_corner_val0;
-                    cube_corner_vals[1] = cube_corner_val1;
-                    cube_corner_vals[2] = cube_corner_val2;
-                    cube_corner_vals[3] = cube_corner_val3;
-                    cube_corner_vals[4] = cube_corner_val4;
-                    cube_corner_vals[5] = cube_corner_val5;
-                    cube_corner_vals[6] = cube_corner_val6;
-                    cube_corner_vals[7] = cube_corner_val7;
-                }
-                else
-                {
-                    float terrainValue = Mathf.PerlinNoise(0, 0); // Default Perlin noise for single voxel
-                    //cube_corner_vals = new float[] { terrainValue, terrainValue, terrainValue, terrainValue, terrainValue, terrainValue, terrainValue, terrainValue };
-                    cube_corner_vals[0] = terrainValue;
-                    cube_corner_vals[1] = terrainValue;
-                    cube_corner_vals[2] = terrainValue;
-                    cube_corner_vals[3] = terrainValue;
-                    cube_corner_vals[4] = terrainValue;
-                    cube_corner_vals[5] = terrainValue;
-                    cube_corner_vals[6] = terrainValue;
-                    cube_corner_vals[7] = terrainValue;
-                }
-                GenerateVoxel(Vector3.zero, cube_corner_vals[0]);
+                float terrainValue = Mathf.PerlinNoise(0, 0); // Default Perlin noise for single voxel
+                                                              //cube_corner_vals = new float[] { terrainValue, terrainValue, terrainValue, terrainValue, terrainValue, terrainValue, terrainValue, terrainValue };
+                cube_corner_vals[0] = terrainValue;
+                cube_corner_vals[1] = terrainValue;
+                cube_corner_vals[2] = terrainValue;
+                cube_corner_vals[3] = terrainValue;
+                cube_corner_vals[4] = terrainValue;
+                cube_corner_vals[5] = terrainValue;
+                cube_corner_vals[6] = terrainValue;
+                cube_corner_vals[7] = terrainValue;
             }
+            GenerateVoxel(Vector3.zero, cube_corner_vals[0]);
 
             BuildMesh();
 
@@ -264,13 +222,11 @@ public class DebugCubeScript : MonoBehaviour
         }
         else
         {
-            int maxVertices = chunkSize * chunkSize * chunkSize * 15;
-
             // Only reallocate if needed
-            if (verticesArray == null || verticesArray.Length < maxVertices)
+            if (verticesArray == null || verticesArray.Length < MAXVERTICES)
             {
-                verticesArray = new Vector3[maxVertices];
-                trianglesArray = new int[maxVertices * 3];
+                verticesArray = new Vector3[MAXVERTICES];
+                trianglesArray = new int[MAXVERTICES * 3];
             }
 
             vertexCount = 0;
@@ -293,37 +249,14 @@ public class DebugCubeScript : MonoBehaviour
         if (cube_corner_vals == null || Constants.CornerTable == null)
             return;
 
-        if (generateChunk)
-        {
-            for (int x = 0; x < chunkSize; x++)
-            {
-                for (int y = 0; y < chunkSize; y++)
-                {
-                    for (int z = 0; z < chunkSize; z++)
-                    {
-                        Vector3 voxelPosition = new Vector3(x, y, z);
-                        for (int i = 0; i < 8; i++)
-                        {
-                            Vector3 cornerPosition = voxelPosition + (Constants.CornerTable[i] * unitSize * unitScale);
-                            float intensity = Mathf.Clamp01(cube_corner_vals[i]);
-                            Gizmos.color = new Color(intensity, intensity, intensity);
-                            Gizmos.DrawSphere(cornerPosition, 0.1f);
-                        }
-                    }
-                }
-            }
-        }
-        else
-        {
-            Vector3 position = transform.position;
+        Vector3 position = transform.position;
 
-            for (int i = 0; i < 8; i++)
-            {
-                Vector3 cornerPosition = position + (Constants.CornerTable[i] * unitSize * unitScale);
-                float intensity = Mathf.Clamp01(cube_corner_vals[i]);
-                Gizmos.color = new Color(intensity, intensity, intensity);
-                Gizmos.DrawSphere(cornerPosition, 0.1f);
-            }
+        for (int i = 0; i < 8; i++)
+        {
+            Vector3 cornerPosition = position + (Constants.CornerTable[i] * unitSize * unitScale);
+            float intensity = Mathf.Clamp01(cube_corner_vals[i]);
+            Gizmos.color = new Color(intensity, intensity, intensity);
+            Gizmos.DrawSphere(cornerPosition, 0.1f);
         }
     }
 }
