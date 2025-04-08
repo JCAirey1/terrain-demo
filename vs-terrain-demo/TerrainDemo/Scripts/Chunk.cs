@@ -54,11 +54,14 @@ public class Chunk
         chunkObject.name = string.Format("Chunk {0}, {1}", _position.x, _position.z);
         chunkPosition = _position;
         chunkObject.transform.position = chunkPosition;
-        chunkObject.layer = LayerMask.NameToLayer("Ground");
 
         meshFilter = chunkObject.AddComponent<MeshFilter>();
         meshCollider = chunkObject.AddComponent<MeshCollider>();
         meshRenderer = chunkObject.AddComponent<MeshRenderer>();
+        Material defaultMaterial = new Material(Shader.Find("Standard")); // Load the built-in Default-Diffuse material
+        meshRenderer.material = defaultMaterial;
+
+        terrainMap = new float[width + 1, height + 1, width + 1]; //needs to be plus one or you'll get an index out of range error
 
         PopulateTerrainMap(_position, WorldSizeInChunks, scale, octaves, persistance, lacunarity);
         CreateMeshData();

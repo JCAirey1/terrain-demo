@@ -68,6 +68,8 @@
     <Compile Include="Assets\Scripts\DebugChunkScript.cs" />
     <Compile Include="Assets\Scripts\DebugCubeScript.cs" />
     <Compile Include="Assets\TerrainPoint.cs" />
+    <Compile Include="Assets\Scripts\DebugWorldGenerator.cs" />
+    <Compile Include="Assets\Scripts\Chunk.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Assets\CommonLib\CommonLib.README.txt" />

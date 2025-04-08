@@ -79,6 +79,8 @@
     <PostBuildEvent>xcopy /Y "$(TargetPath)" "$(SolutionDir)..\unity-terrain-demo\Assets\CommonLib"
 xcopy /Y "$(TargetPath).config" "$(SolutionDir)..\unity-terrain-demo\Assets\CommonLib"
 
+xcopy /Y "$(ProjectDir)Scripts\Chunk.cs" "$(SolutionDir)..\unity-terrain-demo\Assets\Scripts"
+xcopy /Y "$(ProjectDir)Scripts\DebugWorldGenerator.cs" "$(SolutionDir)..\unity-terrain-demo\Assets\Scripts"
 xcopy /Y "$(ProjectDir)Scripts\DebugCubeScript.cs" "$(SolutionDir)..\unity-terrain-demo\Assets\Scripts"
 xcopy /Y "$(ProjectDir)Scripts\DebugChunkScript.cs" "$(SolutionDir)..\unity-terrain-demo\Assets\Scripts"</PostBuildEvent>
   </PropertyGroup>
