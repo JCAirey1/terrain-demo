@@ -6,7 +6,7 @@ using TerrainDemo;
 
 public class DebugWorldGenerator : MonoBehaviour
 {
-    public int WorldSizeInChunks = 10;
+    public int WorldSizeInChunks = 2;
     public int WorldSeed = 1;
     public int chunkWidth = 16;
     Dictionary<Vector3Int, Chunk> chunks = new Dictionary<Vector3Int, Chunk>(); //Storage for currently loaded Chunks
@@ -23,7 +23,10 @@ public class DebugWorldGenerator : MonoBehaviour
             for (int z = 0; z < WorldSizeInChunks; z++)
             {
                 Vector3Int chunkPos = new Vector3Int(x * chunkWidth, 0, z * chunkWidth);
-                chunks.Add(chunkPos, new Chunk(chunkPos, WorldSeed, WorldSizeInChunks));
+                var chunk = new Chunk(chunkPos, WorldSeed, WorldSizeInChunks);
+                chunk.smoothTerrain = true;
+                chunk.Render();
+                chunks.Add(chunkPos, chunk);
                 chunks[chunkPos].chunkObject.transform.SetParent(transform); //put chunks under transform of the World Generator object
             }
         }

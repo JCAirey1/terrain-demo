@@ -250,6 +250,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   worldSeed: 1
+  noise2D: 1
   scale: 20
   octaves: 4
   persistance: 0.3

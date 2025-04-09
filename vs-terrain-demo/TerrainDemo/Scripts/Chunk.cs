@@ -6,12 +6,14 @@ using TerrainDemo;
 
 public class Chunk
 {
-    public GameObject chunkObject;
+    public readonly GameObject chunkObject;
+    private readonly Vector3Int _position;
     MeshFilter meshFilter;
     MeshCollider meshCollider;
     MeshRenderer meshRenderer;
     Vector3Int chunkPosition;
     public int chunkSeed = 1;
+    private int _worldSizeInChunks;
 
     //Perlin Noise Settings
     public bool noise2D = true; //True for 2D Perlin Noise, false for 3D Perlin Noise
@@ -27,10 +29,9 @@ public class Chunk
     float[,,] terrainMap; //3D storage for terrain values that we will sample when generating the mesh of type TerrainPoint
     public float BaseTerrainHeight = 16f; //minimum height of terrain before modification (i.e sea level)
     public float TerrainHeightRange = 12f; //the max height above BaseTerrainHeight our terrain will generate to
-    Vector3Int _position = new Vector3Int(0, 0, 0);
 
     //Marching Cube Settings
-    public bool smoothTerrain; //Toggle for smoothing terrain
+    public bool smoothTerrain { get; set; } = false; //Toggle for smoothing terrain {ability to set from outside of class}
     public bool flatShaded = true; //Toggle for triangles sharing points for rendering
     public bool useLists = true; //Toggle between list-based and array-based storage
     public bool debugChunkWireframe = true; //Draw chunk bounding wireframe when chunk is selected
@@ -48,11 +49,17 @@ public class Chunk
 
     public TerrainDemo.Logger MyLogger { get; } = new TerrainDemo.Logger();
 
-    public Chunk(Vector3Int _position, int _chunkSeed, int WorldSizeInChunks)
+    private Chunk()
+    {
+
+    }
+
+    public Chunk(Vector3Int position, int chunkSeed, int worldSizeInChunks) //Public Constructor
     {
         chunkObject = new GameObject();
-        chunkObject.name = string.Format("Chunk {0}, {1}", _position.x, _position.z);
-        chunkPosition = _position;
+        chunkObject.name = string.Format("Chunk {0}, {1}", position.x, position.z);
+        chunkPosition = position;
+        _position = position;
         chunkObject.transform.position = chunkPosition;
 
         meshFilter = chunkObject.AddComponent<MeshFilter>();
@@ -62,8 +69,12 @@ public class Chunk
         meshRenderer.material = defaultMaterial;
 
         terrainMap = new float[width + 1, height + 1, width + 1]; //needs to be plus one or you'll get an index out of range error
+        _worldSizeInChunks = worldSizeInChunks;
+    }
 
-        PopulateTerrainMap(_position, WorldSizeInChunks, scale, octaves, persistance, lacunarity);
+    public void Render()
+    {
+        PopulateTerrainMap(_position, _worldSizeInChunks, scale, octaves, persistance, lacunarity);
         CreateMeshData();
         BuildMesh();
     }
