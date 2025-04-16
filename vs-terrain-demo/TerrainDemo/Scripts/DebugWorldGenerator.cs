@@ -9,7 +9,6 @@ public class DebugWorldGenerator : MonoBehaviour
     #region Privates
     private readonly Dictionary<Vector3Int, Chunk> _chunks = new Dictionary<Vector3Int, Chunk>(); //Storage for currently loaded Chunks
     private ChunkOptions _options = null;
-    private Vector3Int _position = new Vector3Int(0, 0, 0);
     #endregion
 
     #region DebugProperties
@@ -52,8 +51,7 @@ public class DebugWorldGenerator : MonoBehaviour
             for (int z = 0; z < WorldSizeInChunks; z++)
             {
                 Vector3Int chunkPos = new Vector3Int(x * ChunkWidth, 0, z * ChunkWidth);
-                var chunk = new Chunk(chunkPos, WorldSeed, WorldSizeInChunks);
-                chunk.smoothTerrain = _options.SmoothTerrain;
+                var chunk = new Chunk(chunkPos, _options);
                 chunk.Render();
                 _chunks.Add(chunkPos, chunk);
                 _chunks[chunkPos].chunkObject.transform.SetParent(transform); //put chunks under transform of the World Generator object
@@ -66,11 +64,10 @@ public class DebugWorldGenerator : MonoBehaviour
     {
         foreach(var chunk in _chunks)
         {
-            chunk.Value.smoothTerrain = _options.SmoothTerrain;
+            chunk.Value.SetOptions(_options);
             chunk.Value.ReRender();
         }
     }
-
 
     void Update()
     {
