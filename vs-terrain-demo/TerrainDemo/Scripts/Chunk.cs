@@ -56,6 +56,8 @@ public class Chunk
 
     public Chunk(Vector3Int position, int chunkSeed, int worldSizeInChunks) //Public Constructor
     {
+        Debug.Log("Chunk init");
+
         chunkObject = new GameObject();
         chunkObject.name = string.Format("Chunk {0}, {1}", position.x, position.z);
         chunkPosition = position;
@@ -75,6 +77,12 @@ public class Chunk
     public void Render()
     {
         PopulateTerrainMap(_position, _worldSizeInChunks, scale, octaves, persistance, lacunarity);
+        CreateMeshData();
+        BuildMesh();
+    }
+
+    public void ReRender()
+    {
         CreateMeshData();
         BuildMesh();
     }
