@@ -14,7 +14,6 @@ public class DebugWorldGenerator : MonoBehaviour
     #region DebugProperties
     public int WorldSizeInChunks = 2;
     public int WorldSeed = 1;
-    public int ChunkWidth = 16;
     public bool Noise2D = true;
     public float Scale = 16f;
     [Range(1, 10)]
@@ -50,14 +49,14 @@ public class DebugWorldGenerator : MonoBehaviour
         {
             for (int z = 0; z < WorldSizeInChunks; z++)
             {
-                Vector3Int chunkPos = new Vector3Int(x * ChunkWidth, 0, z * ChunkWidth);
+                Vector3Int chunkPos = new Vector3Int(x * Width, 0, z * Width);
                 var chunk = new Chunk(chunkPos, _options);
                 chunk.Render();
                 _chunks.Add(chunkPos, chunk);
                 _chunks[chunkPos].chunkObject.transform.SetParent(transform); //put chunks under transform of the World Generator object
             }
         }
-        Debug.Log(string.Format("{0} x {0} world generated.", (WorldSizeInChunks * ChunkWidth)));
+        Debug.Log(string.Format("{0} x {0} world generated.", (WorldSizeInChunks * Width)));
     }
 
     void ReGenerate()
@@ -88,7 +87,6 @@ public class DebugWorldGenerator : MonoBehaviour
         {
             WorldSizeInChunks = WorldSizeInChunks,
             WorldSeed = WorldSeed,
-            ChunkWidth = ChunkWidth,
             Noise2D = Noise2D,
             Scale = Scale,
             Octaves = Octaves,

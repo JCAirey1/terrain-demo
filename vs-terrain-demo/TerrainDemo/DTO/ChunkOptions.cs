@@ -7,7 +7,6 @@
         public int Width { get; set; } = 16;                                //for terrain generation
         public int Octaves { get; set; } = 4;                               //for terrain generation
         public int Height { get; set; } = 32;                               //for terrain generation
-        public int ChunkWidth { get; set; } = 16;
         public float TerrainHeightRange { get; set; } = 12f;                //the max height above baseterrainheight our terrain will generate to
         public float Scale { get; set; } = 16f;                             //for terrain generation
         public float Persistance { get; set; } = 0.3f;                      //for terrain generation
@@ -33,7 +32,6 @@
                    Width == other.Width &&
                    Octaves == other.Octaves &&
                    Height == other.Height &&
-                   ChunkWidth == other.ChunkWidth &&
                    TerrainHeightRange == other.TerrainHeightRange &&
                    Scale == other.Scale &&
                    Persistance == other.Persistance &&
@@ -60,7 +58,6 @@
                 hash = hash * 23 + Width.GetHashCode();
                 hash = hash * 23 + Octaves.GetHashCode();
                 hash = hash * 23 + Height.GetHashCode();
-                hash = hash * 23 + ChunkWidth.GetHashCode();
                 hash = hash * 23 + TerrainHeightRange.GetHashCode();
                 hash = hash * 23 + Scale.GetHashCode();
                 hash = hash * 23 + Persistance.GetHashCode();
