@@ -16,8 +16,6 @@ public class Chunk
     private readonly MeshFilter _meshFilter;
     private readonly MeshCollider _meshCollider;
     private readonly MeshRenderer _meshRenderer;
-    private readonly int _width = 16;
-    private readonly int _height = 32;
     private float[,,] _terrainMap;
     #endregion
 
@@ -49,7 +47,7 @@ public class Chunk
         Material defaultMaterial = new Material(Shader.Find("Standard")); // Load the built-in Default-Diffuse material
         _meshRenderer.material = defaultMaterial;
 
-        _terrainMap = new float[_width + 1, _height + 1, _width + 1]; //needs to be plus one or you'll get an index out of range error
+        _terrainMap = new float[chunkOptions.Width + 1, chunkOptions.Height + 1, chunkOptions.Width + 1]; //needs to be plus one or you'll get an index out of range error
     }
 
     public void SetOptions(ChunkOptions chunkOptions)
@@ -76,19 +74,19 @@ public class Chunk
     // The data points for terrain are stored at the corners of our "cubes", so the terrainMap needs to be 1 larger than the width/height of our mesh.
     void PopulateTerrainMap(Vector3Int _position, int WorldSizeInChunks, float scale, int octaves, float persistance, float lacunarity)
     {
-        for (int x = 0; x < _width + 1; x++)
+        for (int x = 0; x < _chunkOptions.Width + 1; x++)
         {
-            for (int y = 0; y < _height + 1; y++)
+            for (int y = 0; y < _chunkOptions.Height + 1; y++)
             {
-                for (int z = 0; z < _width + 1; z++)
+                for (int z = 0; z < _chunkOptions.Width + 1; z++)
                 {
                     if (_chunkOptions.Noise2D)
                     {
                         //Using clamp to bound PerlinNoise as it intends to return a value 0.0f-1.0f but may sometimes be slightly out of that range
-                        //Multipying by _height will return a value in the range of 0-height
+                        //Multipying by chunkOptions.Height will return a value in the range of 0-height
                         float thisHeight = GetTerrianHeight(x + _position.x, z + _position.z, scale, octaves, persistance, lacunarity, _chunkOptions.WorldSeed);
 
-                        //y points below thisHeight will be negative (below terrain) and y points above this _height will be positve and will render 
+                        //y points below thisHeight will be negative (below terrain) and y points above this chunkOptions.Height will be positve and will render 
                         _terrainMap[x, y, z] = (float)y - thisHeight;
                     }
                     else if (!_chunkOptions.Noise2D)
@@ -176,8 +174,8 @@ public class Chunk
     {
         _verticesList.Clear();
         _trianglesList.Clear();
-        _verticesArray = new Vector3[_width * _width * _height * 15]; //max 5 triangles per voxel, 3 points each
-        _trianglesArray = new int[_width * _width * _height * 5]; //max 5 triangles per voxel
+        _verticesArray = new Vector3[_chunkOptions.Width * _chunkOptions.Width * _chunkOptions.Height * 15]; //max 5 triangles per voxel, 3 points each
+        _trianglesArray = new int[_chunkOptions.Width * _chunkOptions.Width * _chunkOptions.Height * 5]; //max 5 triangles per voxel
         _vertexCount = 0;
         _triangleCount = 0;
     }
@@ -187,11 +185,11 @@ public class Chunk
         ClearMeshData();
 
         //looking at the cubes, not the points, so you only need to loop the _width number and not the _width + 1 numbers
-        for (int x = 0; x < _width; x++)
+        for (int x = 0; x < _chunkOptions.Width; x++)
         {
-            for (int y = 0; y < _height; y++)
+            for (int y = 0; y < _chunkOptions.Height; y++)
             {
-                for (int z = 0; z < _width; z++)
+                for (int z = 0; z < _chunkOptions.Width; z++)
                 {
                     MarchCube(new Vector3Int(x, y, z));
                 }
