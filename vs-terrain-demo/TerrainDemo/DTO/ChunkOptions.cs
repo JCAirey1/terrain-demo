@@ -2,6 +2,7 @@
 {
     public class ChunkOptions
     {
+        
         public int WorldSizeInChunks { get; set; } = 2;
         public int WorldSeed { get; set; } = 1;
         public int Width { get; set; } = 16;                                //for terrain generation

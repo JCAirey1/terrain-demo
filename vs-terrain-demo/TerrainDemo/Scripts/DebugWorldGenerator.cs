@@ -49,14 +49,14 @@ public class DebugWorldGenerator : MonoBehaviour
         {
             for (int z = 0; z < WorldSizeInChunks; z++)
             {
-                Vector3Int chunkPos = new Vector3Int(x * Width, 0, z * Width);
+                Vector3Int chunkPos = new Vector3Int(x * _options.Width, 0, z * _options.Width);
                 var chunk = new Chunk(chunkPos, _options);
                 chunk.Render();
                 _chunks.Add(chunkPos, chunk);
                 _chunks[chunkPos].chunkObject.transform.SetParent(transform); //put chunks under transform of the World Generator object
             }
         }
-        Debug.Log(string.Format("{0} x {0} world generated.", (WorldSizeInChunks * Width)));
+        Debug.Log(string.Format("{0} x {0} world generated.", (WorldSizeInChunks * _options.Width)));
     }
 
     //creates a new chunk at a given Vector3Int position if it doesn't already exist:
@@ -86,7 +86,19 @@ public class DebugWorldGenerator : MonoBehaviour
 
     void ReGenerate()
     {
-        foreach(var chunk in _chunks)
+        // Check if the size/dimensions have changed
+        if (_options.WorldSizeInChunks != WorldSizeInChunks || 
+            _options.Width != Width || 
+            _options.Height != Height)
+        {
+            Debug.Log("World dimensions changed. Redrawing the world...");
+            _options = GetOptions(); // Update options
+            Generate(); // Completely redraw the world
+            return;
+        }
+
+        // Otherwise, update and re-render existing chunks
+        foreach (var chunk in _chunks)
         {
             chunk.Value.SetOptions(_options);
             chunk.Value.ReRender();
