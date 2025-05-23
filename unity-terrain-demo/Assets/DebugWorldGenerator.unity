@@ -242,9 +242,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3c2985f366591d642b77f5bf3638bee0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  WorldSizeInChunks: 10
+  WorldSizeInChunks: 2
   WorldSeed: 1
-  chunkWidth: 16
+  Noise2D: 1
+  Scale: 16
+  Octaves: 4
+  Persistance: 0.3
+  Lacunarity: 2.3
+  Width: 16
+  Height: 32
+  IsoVal: 0.5
+  BaseTerrainHeight: 16
+  TerrainHeightRange: 12
+  SmoothTerrain: 0
+  FlatShaded: 1
+  UseLists: 1
+  DebugChunkWireframe: 1
+  DebugChunkWireframePersistence: 0
+  DebugChunkVoxelVal: 1
+  DebugChunkVoxelValPersistence: 0
 --- !u!1 &1153936137
 GameObject:
   m_ObjectHideFlags: 0

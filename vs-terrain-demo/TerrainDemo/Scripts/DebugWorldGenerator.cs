@@ -59,6 +59,31 @@ public class DebugWorldGenerator : MonoBehaviour
         Debug.Log(string.Format("{0} x {0} world generated.", (WorldSizeInChunks * Width)));
     }
 
+    //creates a new chunk at a given Vector3Int position if it doesn't already exist:
+    public void AddChunk(Vector3Int chunkPos)
+    {
+        if (_chunks.ContainsKey(chunkPos))
+            return;
+
+        var chunk = new Chunk(chunkPos, _options);
+        chunk.Render();
+        _chunks.Add(chunkPos, chunk);
+        chunk.chunkObject.transform.SetParent(transform); // Parent under world
+    }
+
+    //safely removes a chunk and destroys its GameObject:
+    public void RemoveChunk(Vector3Int chunkPos)
+    {
+        if (_chunks.TryGetValue(chunkPos, out Chunk chunk))
+        {
+            if (chunk.chunkObject != null)
+            {
+                DestroyImmediate(chunk.chunkObject);
+            }
+            _chunks.Remove(chunkPos);
+        }
+    }
+
     void ReGenerate()
     {
         foreach(var chunk in _chunks)
@@ -77,6 +102,60 @@ public class DebugWorldGenerator : MonoBehaviour
         }
 
         Debug.Log("props updated");
+
+        int oldSize = _options.WorldSizeInChunks;
+        int newSize = newOptions.WorldSizeInChunks;
+
+        // If size increased → add new chunks
+        if (newSize > oldSize)
+        {
+            for (int x = 0; x < newSize; x++)
+            {
+                for (int z = 0; z < newSize; z++)
+                {
+                    // Only add if beyond the old bounds
+                    if (x >= oldSize || z >= oldSize)
+                    {
+                        Vector3Int chunkPos = new Vector3Int(x * Width, 0, z * Width);
+                        if (!_chunks.ContainsKey(chunkPos))
+                        {
+                            AddChunk(chunkPos);
+                        }
+                    }
+                }
+            }
+
+            Debug.Log($"Expanded world from {oldSize}x{oldSize} to {newSize}x{newSize} chunks.");
+            _options = newOptions;
+            return;
+        }
+
+        // If size decreased → remove out-of-bound chunks
+        if (newSize < oldSize)
+        {
+            List<Vector3Int> toRemove = new List<Vector3Int>();
+
+            foreach (var kvp in _chunks)
+            {
+                Vector3Int pos = kvp.Key;
+                int xChunk = pos.x / Width;
+                int zChunk = pos.z / Width;
+
+                if (xChunk >= newSize || zChunk >= newSize)
+                {
+                    toRemove.Add(pos);
+                }
+            }
+
+            foreach (var pos in toRemove)
+            {
+                RemoveChunk(pos);
+            }
+
+            Debug.Log($"Shrunk world from {oldSize}x{oldSize} to {newSize}x{newSize} chunks.");
+            _options = newOptions;
+            return;
+        }
 
         _options = newOptions;
         ReGenerate();
