@@ -261,6 +261,8 @@ MonoBehaviour:
   DebugChunkWireframePersistence: 0
   DebugChunkVoxelVal: 1
   DebugChunkVoxelValPersistence: 0
+  DebugUseSplineShaping: 0
+  DebugSaveNoiseMaps: 0
 --- !u!1 &1153936137
 GameObject:
   m_ObjectHideFlags: 0

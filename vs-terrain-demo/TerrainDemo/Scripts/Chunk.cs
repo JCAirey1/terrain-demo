@@ -89,6 +89,15 @@ public class Chunk
                         //y points below thisHeight will be negative (below terrain) and y points above this chunkOptions.Height will be positve and will render 
                         _terrainMap[x, y, z] = (float)y - thisHeight;
                     }
+                    else if (_chunkOptions.DebugUseSplineShaping)
+                    {
+                        //Continentalness, Erosion, Peaks & Valleys Spline Noise Shaping
+                        float thisHeight = GetTerrianHeightSpline(x + _position.x, z + _position.z,_chunkOptions.WorldSeed);
+
+                        //>0 = solid, <0 = air
+                        Debug.Log(thisHeight);
+                        _terrainMap[x, y, z] = (float)y - thisHeight;
+                    }
                     else if (!_chunkOptions.Noise2D)
                     {
 
@@ -168,6 +177,44 @@ public class Chunk
         }
 
         return (float)_chunkOptions.TerrainHeightRange * noiseHeight + _chunkOptions.BaseTerrainHeight;
+        
+    }
+
+    //Spline noise shaper with C, E, P&V
+    public float GetTerrianHeightSpline(int x, int z, int seed)
+    {
+        System.Random prng = new System.Random(seed);
+        int offsetX = prng.Next(int.MinValue, int.MaxValue); //To be added as an offset to the sampled points
+        int offsetZ = prng.Next(int.MinValue, int.MaxValue);
+
+        float splineScale = 0.01f;
+        float continentalnessScale = 0.002f;
+        float erosionScale = 0.01f;
+        float peaksValleysScale = 0.05f;
+        float warpStrength = 30f;
+
+        float nx = x * splineScale;
+        float nz = z * splineScale;
+
+        // Continentalness: base landmass shape
+        float continentalness = Mathf.PerlinNoise(x * continentalnessScale, z * continentalnessScale);
+        continentalness = Mathf.SmoothStep(0f, 1f, continentalness);
+
+        // Erosion: smooth vs. jagged control
+        float erosion = Mathf.PerlinNoise(x * erosionScale, z * erosionScale);
+        erosion = Mathf.Clamp01(erosion);
+        float erosionEffect = Mathf.Lerp(1f, 0.3f, erosion);
+
+        // Peaks & Valleys: warped local vertical variation
+        float warpX = Mathf.PerlinNoise(x * 0.1f, z * 0.1f) * warpStrength;
+        float warpZ = Mathf.PerlinNoise(x * 0.1f + 1000, z * 0.1f + 1000) * warpStrength;
+        float pv = Mathf.PerlinNoise((x + warpX) * peaksValleysScale, (z + warpZ) * peaksValleysScale);
+        float peaksValleys = Mathf.Sin(pv * Mathf.PI); // wavy pattern
+        float applyPV = (continentalness > 0.5f && erosion < 0.4f) ? 1f : 0f;
+
+        float terrainHeight = continentalness * _chunkOptions.BaseTerrainHeight * erosionEffect + peaksValleys * (float)_chunkOptions.TerrainHeightRange * applyPV;
+
+        return terrainHeight;
     }
 
     void ClearMeshData()

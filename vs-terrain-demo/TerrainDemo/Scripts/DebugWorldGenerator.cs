@@ -33,6 +33,8 @@ public class DebugWorldGenerator : MonoBehaviour
     public bool DebugChunkWireframePersistence = false;
     public bool DebugChunkVoxelVal = true;
     public bool DebugChunkVoxelValPersistence = false;
+    public bool DebugUseSplineShaping = true;
+    public bool DebugSaveNoiseMaps = false;
     #endregion
 
     void Start()
@@ -194,7 +196,9 @@ public class DebugWorldGenerator : MonoBehaviour
             DebugChunkWireframe = DebugChunkWireframe,
             DebugChunkWireframePersistence = DebugChunkWireframePersistence,
             DebugChunkVoxelVal = DebugChunkVoxelVal,
-            DebugChunkVoxelValPersistence = DebugChunkVoxelValPersistence
+            DebugChunkVoxelValPersistence = DebugChunkVoxelValPersistence,
+            DebugUseSplineShaping = DebugUseSplineShaping,
+            DebugSaveNoiseMaps = DebugSaveNoiseMaps
         };
     }
 }

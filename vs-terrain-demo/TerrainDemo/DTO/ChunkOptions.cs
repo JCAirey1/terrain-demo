@@ -22,6 +22,8 @@
         public bool DebugChunkWireframe { get; set; } = true;               //draw chunk bounding wireframe when chunk is selected
         public bool DebugChunkVoxelValPersistence { get; set; } = false;    //draw grayscale sphere gizmos even when chunk is notselected
         public bool DebugChunkVoxelVal { get; set; } = true;                //draw grayscale sphere gizmos when chunk is selected
+        public bool DebugUseSplineShaping { get; set; } = true;             //Uses spline shaping noise maps for C, E, P&V
+        public bool DebugSaveNoiseMaps { get; set; } = false;               //writes noise maps to a local png file for inspection
 
         public override bool Equals(object obj)
         {
