@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 using TerrainDemo;
+using System.IO;
 
 public class Chunk
 {
@@ -408,5 +409,35 @@ public class Chunk
 
         return configurationIndex;
 
+    }
+
+    //helper method to save noise maps to local png file for inspection
+    void SaveNoiseMapAsImage(float[,] noiseMap, string name)
+    {
+        int width = noiseMap.GetLength(0);
+        int height = noiseMap.GetLength(1);
+        Texture2D texture = new Texture2D(width, height);
+
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                float value = Mathf.Clamp01(noiseMap[x, y]);
+                Color color = new Color(value, value, value);
+                texture.SetPixel(x, y, color);
+            }
+        }
+
+        texture.Apply();
+        byte[] pngData = null;
+        //pngData = texture.EncodeToPNG();
+
+        string folderPath = Path.Combine(Application.dataPath, "NoiseDebug");
+        if (!Directory.Exists(folderPath))
+            Directory.CreateDirectory(folderPath);
+
+        string filePath = Path.Combine(folderPath, name + ".png");
+        File.WriteAllBytes(filePath, pngData);
+        Debug.Log("Saved " + name + " to " + filePath);
     }
 }
