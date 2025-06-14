@@ -8,7 +8,9 @@ public class BasicMovement : MonoBehaviour
     public const float rotationSpeed = 100.0f;
 
     private Vector2 moveInput;
+    private float verticalInput;
     private InputAction moveAction;
+    private InputAction verticalAction;
 
     private void Awake()
     {
@@ -26,16 +28,28 @@ public class BasicMovement : MonoBehaviour
             .With("Left", "<Keyboard>/leftArrow")
             .With("Right", "<Keyboard>/d")
             .With("Right", "<Keyboard>/rightArrow");
+
+        // Vertical movement (Q = down, E = up)
+        verticalAction = new InputAction(
+            type: InputActionType.Value,
+            binding: "<Gamepad>/leftStick"
+        );
+
+        verticalAction.AddCompositeBinding("1DAxis")
+            .With("Negative", "<Keyboard>/q")
+            .With("Positive", "<Keyboard>/e");
     }
 
     private void OnEnable()
     {
         moveAction.Enable();
+        verticalAction.Enable();
     }
 
     private void OnDisable()
     {
         moveAction.Disable();
+        verticalAction.Disable();
     }
 
     private void Start()
@@ -46,11 +60,15 @@ public class BasicMovement : MonoBehaviour
     void Update()
     {
         moveInput = moveAction.ReadValue<Vector2>();
+        verticalInput = verticalAction.ReadValue<float>();
 
-        float translation = moveInput.y * speed * Time.deltaTime;
+        float ztranslation = moveInput.y * speed * Time.deltaTime;
+        float ytranslation = verticalInput * speed * Time.deltaTime;
         float rotation = moveInput.x * rotationSpeed * Time.deltaTime;
 
-        transform.Translate(0, 0, translation);
+        Debug.Log($"verticalInput: {verticalInput}, ytranslation: {ztranslation}");
+
+        transform.Translate(0, ytranslation, ztranslation);
         transform.Rotate(0, rotation, 0);
     }
 }
