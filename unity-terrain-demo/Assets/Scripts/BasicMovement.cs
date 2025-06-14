@@ -11,10 +11,11 @@ public class BasicMovement : MonoBehaviour
     private float verticalInput;
     private InputAction moveAction;
     private InputAction verticalAction;
+    private InputAction ctrlAction;
 
     private void Awake()
     {
-        // Create a new InputAction for movement (WASD/Arrow keys by default)
+        // Movement (WASD/Arrow keys/Gamepad)
         moveAction = new InputAction(
             type: InputActionType.Value,
             binding: "<Gamepad>/leftStick"
@@ -31,25 +32,31 @@ public class BasicMovement : MonoBehaviour
 
         // Vertical movement (Q = down, E = up)
         verticalAction = new InputAction(
-            type: InputActionType.Value,
-            binding: "<Gamepad>/leftStick"
+            type: InputActionType.Value
         );
-
         verticalAction.AddCompositeBinding("1DAxis")
             .With("Negative", "<Keyboard>/q")
             .With("Positive", "<Keyboard>/e");
+
+        // Ctrl key
+        ctrlAction = new InputAction(
+            type: InputActionType.Button,
+            binding: "<Keyboard>/leftCtrl"
+        );
     }
 
     private void OnEnable()
     {
         moveAction.Enable();
         verticalAction.Enable();
+        ctrlAction.Enable();
     }
 
     private void OnDisable()
     {
         moveAction.Disable();
         verticalAction.Disable();
+        ctrlAction.Disable();
     }
 
     private void Start()
@@ -61,14 +68,25 @@ public class BasicMovement : MonoBehaviour
     {
         moveInput = moveAction.ReadValue<Vector2>();
         verticalInput = verticalAction.ReadValue<float>();
+        bool ctrlHeld = ctrlAction.ReadValue<float>() > 0.5f;
 
         float ztranslation = moveInput.y * speed * Time.deltaTime;
         float ytranslation = verticalInput * speed * Time.deltaTime;
-        float rotation = moveInput.x * rotationSpeed * Time.deltaTime;
+        float xtranslation = 0f;
+        float rotation = 0f;
 
-        Debug.Log($"verticalInput: {verticalInput}, ytranslation: {ztranslation}");
+        if (ctrlHeld)
+        {
+            rotation = moveInput.x * rotationSpeed * Time.deltaTime;
+        }
+        else
+        {
+            xtranslation = moveInput.x * speed * Time.deltaTime;
+        }
 
-        transform.Translate(0, ytranslation, ztranslation);
+        Debug.Log($"cv {ctrlAction.ReadValue<float>()} verticalInput: {verticalInput}, ytranslation: {ytranslation}, ctrlHeld: {ctrlHeld}, xtranslation: {xtranslation}, rotation: {rotation}");
+
+        transform.Translate(xtranslation, ytranslation, ztranslation);
         transform.Rotate(0, rotation, 0);
     }
 }
