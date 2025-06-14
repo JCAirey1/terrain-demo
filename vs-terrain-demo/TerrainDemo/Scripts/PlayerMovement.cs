@@ -1,19 +1,29 @@
 using UnityEngine;
+using UnityEngine.InputSystem;
 
-public class PlayerMovement : MonoBehaviour
+// A very simplistic car driving on the x-z plane.
+
+public class ExampleClass : MonoBehaviour
 {
-    public float speed = 5f; // Movement speed
+    public float speed = 10.0f;
+    public float rotationSpeed = 100.0f;
 
     void Update()
     {
-        // Get input from WASD keys
-        float horizontal = Input.GetAxis("Horizontal"); // A/D or Left/Right Arrow
-        float vertical = Input.GetAxis("Vertical");     // W/S or Up/Down Arrow
+        // Get the horizontal and vertical axis.
+        // By default they are mapped to the arrow keys.
+        //// The value is in the range -1 to 1
+        //float translation = InputSystem. .GetAxis("Vertical") * speed;
+        ////float rotation = Input.GetAxis("Horizontal") * rotationSpeed;
 
-        // Calculate movement direction
-        Vector3 movement = new Vector3(horizontal, 0f, vertical);
+        //// Make it move 10 meters per second instead of 10 meters per frame...
+        //translation *= Time.deltaTime;
+        //rotation *= Time.deltaTime;
 
-        // Move the player
-        transform.Translate(movement * speed * Time.deltaTime, Space.World);
+        //// Move translation along the object's z-axis
+        //transform.Translate(0, 0, translation);
+
+        //// Rotate around our y-axis
+        //transform.Rotate(0, rotation, 0);
     }
 }
