@@ -123,18 +123,28 @@ public class DebugWorldGenerator : MonoBehaviour
         // If size increased → add new chunks
         if (newSize > oldSize)
         {
-            for (int x = 0; x < newSize; x++)
+            // Add new border columns (right side)
+            for (int x = oldSize; x < newSize; x++)
             {
                 for (int z = 0; z < newSize; z++)
                 {
-                    // Only add if beyond the old bounds
-                    if (x >= oldSize || z >= oldSize)
+                    Vector3Int chunkPos = new Vector3Int(x * Width, 0, z * Width);
+                    if (!_chunks.ContainsKey(chunkPos))
                     {
-                        Vector3Int chunkPos = new Vector3Int(x * Width, 0, z * Width);
-                        if (!_chunks.ContainsKey(chunkPos))
-                        {
-                            AddChunk(chunkPos);
-                        }
+                        AddChunk(chunkPos);
+                    }
+                }
+            }
+
+            // Add new border rows (bottom side), excluding the corner already added
+            for (int x = 0; x < oldSize; x++)
+            {
+                for (int z = oldSize; z < newSize; z++)
+                {
+                    Vector3Int chunkPos = new Vector3Int(x * Width, 0, z * Width);
+                    if (!_chunks.ContainsKey(chunkPos))
+                    {
+                        AddChunk(chunkPos);
                     }
                 }
             }
