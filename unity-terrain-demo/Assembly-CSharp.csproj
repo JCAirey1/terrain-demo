@@ -62,7 +62,6 @@
   <ItemGroup>
     <Compile Include="Assets\Scripts\DebugChunkScript.cs" />
     <Compile Include="Assets\Scripts\BasicMovement.cs" />
-    <Compile Include="Assets\Scripts\Chunk.cs" />
     <Compile Include="Assets\Scripts\DebugCubeScript.cs" />
     <Compile Include="Assets\TerrainPoint.cs" />
     <Compile Include="Assets\Scripts\DebugWorldGenerator.cs" />
