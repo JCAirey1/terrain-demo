@@ -216,14 +216,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 506725021}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: -1196153076, guid: f7ccc850c80c7e8478db52aefc2f0947, type: 3}
+  m_Script: {fileID: 11500000, guid: 804467fd244fd9b4fac936ba335f3f3c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   iso_val: 0.5
   useLists: 1
-  generateChunk: 0
   useManualCornerValues: 1
-  chunkSize: 8
   perlinScale: 0.1
   smoothTerrain: 0
   unitSize: 1
