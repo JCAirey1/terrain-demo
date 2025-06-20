@@ -6,12 +6,15 @@ public class BasicMovement : MonoBehaviour
     public Camera _cam;
     public const float speed = 10.0f;
     public const float rotationSpeed = 100.0f;
+    public const float camPanSpeed = 5.0f;
 
     private Vector2 moveInput;
     private float verticalInput;
+    private float camPanInput;
     private InputAction moveAction;
     private InputAction verticalAction;
     private InputAction ctrlAction;
+    private InputAction camPanAction;
 
     private void Awake()
     {
@@ -43,6 +46,14 @@ public class BasicMovement : MonoBehaviour
             type: InputActionType.Button,
             binding: "<Keyboard>/leftCtrl"
         );
+
+        // Camera pan (R = up, F = down)
+        camPanAction = new InputAction(
+            type: InputActionType.Value
+        );
+        camPanAction.AddCompositeBinding("1DAxis")
+            .With("Negative", "<Keyboard>/f")
+            .With("Positive", "<Keyboard>/r");
     }
 
     private void OnEnable()
@@ -50,6 +61,7 @@ public class BasicMovement : MonoBehaviour
         moveAction.Enable();
         verticalAction.Enable();
         ctrlAction.Enable();
+        camPanAction.Enable();
     }
 
     private void OnDisable()
@@ -57,6 +69,7 @@ public class BasicMovement : MonoBehaviour
         moveAction.Disable();
         verticalAction.Disable();
         ctrlAction.Disable();
+        camPanAction.Disable();
     }
 
     private void Start()
@@ -68,6 +81,7 @@ public class BasicMovement : MonoBehaviour
     {
         moveInput = moveAction.ReadValue<Vector2>();
         verticalInput = verticalAction.ReadValue<float>();
+        camPanInput = camPanAction.ReadValue<float>();
         bool ctrlHeld = ctrlAction.ReadValue<float>() > 0.5f;
 
         float ztranslation = moveInput.y * speed * Time.deltaTime;
@@ -84,7 +98,11 @@ public class BasicMovement : MonoBehaviour
             xtranslation = moveInput.x * speed * Time.deltaTime;
         }
 
-        Debug.Log($"cv {ctrlAction.ReadValue<float>()} verticalInput: {verticalInput}, ytranslation: {ytranslation}, ctrlHeld: {ctrlHeld}, xtranslation: {xtranslation}, rotation: {rotation}");
+        // Camera panning up/down
+        if (_cam != null && Mathf.Abs(camPanInput) > 0.01f)
+        {
+            _cam.transform.Translate(Vector3.up * camPanInput * camPanSpeed * Time.deltaTime, Space.Self);
+        }
 
         transform.Translate(xtranslation, ytranslation, ztranslation);
         transform.Rotate(0, rotation, 0);
