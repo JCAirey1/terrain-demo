@@ -60,17 +60,20 @@
     <Analyzer Include="C:\Program Files\Unity 2022.3.22f1\Editor\Data\Tools\Unity.SourceGenerators\Unity.Properties.SourceGenerator.dll" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\Constants\Constants.cs" />
     <Compile Include="Assets\Scripts\DebugChunkScript.cs" />
+    <Compile Include="Assets\Logger.cs" />
     <Compile Include="Assets\Scripts\BasicMovement.cs" />
+    <Compile Include="Assets\Chunk.cs" />
     <Compile Include="Assets\Scripts\CubeGeneratorScript.cs" />
     <Compile Include="Assets\Scripts\DebugCubeScript.cs" />
     <Compile Include="Assets\TerrainPoint.cs" />
+    <Compile Include="Assets\CubeGeneratorOptions.cs" />
     <Compile Include="Assets\Scripts\DebugWorldGenerator.cs" />
+    <Compile Include="Assets\DTO\ChunkOptions.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Assets\CommonLib\CommonLib.README.txt" />
     <None Include="Assets\Scripts\Scripts.README.txt" />
-    <None Include="Assets\CommonLib\TerrainDemo.dll" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="UnityEngine">
@@ -415,10 +418,6 @@
     </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>Library\PackageCache\com.unity.nuget.newtonsoft-json@3.2.1\Runtime\Newtonsoft.Json.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="TerrainDemo">
-      <HintPath>Assets\CommonLib\TerrainDemo.dll</HintPath>
       <Private>False</Private>
     </Reference>
     <Reference Include="Unity.Analytics.StandardEvents">
