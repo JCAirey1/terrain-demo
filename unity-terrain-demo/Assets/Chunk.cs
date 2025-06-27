@@ -18,6 +18,11 @@ public class Chunk
     private readonly MeshCollider _meshCollider;
     private readonly MeshRenderer _meshRenderer;
     private float[,,] _terrainMap;
+
+    float[,] continentalnessMap;
+    float[,] erosionMap;
+    float[,] peaksValleysMap;
+
     #endregion
 
     #region Public
@@ -75,6 +80,10 @@ public class Chunk
     // The data points for terrain are stored at the corners of our "cubes", so the terrainMap needs to be 1 larger than the width/height of our mesh.
     void PopulateTerrainMap(Vector3Int _position, int WorldSizeInChunks, float scale, int octaves, float persistance, float lacunarity)
     {
+        continentalnessMap = new float[_chunkOptions.Width + 1, _chunkOptions.Width + 1];
+        erosionMap = new float[_chunkOptions.Width + 1, _chunkOptions.Width + 1];
+        peaksValleysMap = new float[_chunkOptions.Width + 1, _chunkOptions.Width + 1];
+
         for (int x = 0; x < _chunkOptions.Width + 1; x++)
         {
             for (int y = 0; y < _chunkOptions.Height + 1; y++)
@@ -116,6 +125,10 @@ public class Chunk
                 }
             }
         }
+
+        SaveNoiseMapAsImage(continentalnessMap, "ContinentalnessMap");
+        SaveNoiseMapAsImage(erosionMap, "ErosionMap");
+        SaveNoiseMapAsImage(peaksValleysMap, "PeaksValleysMap");
     }
 
     //Configurable Perlin Noise sampler
@@ -214,6 +227,15 @@ public class Chunk
         float applyPV = (continentalness > 0.5f && erosion < 0.4f) ? 1f : 0f;
 
         float terrainHeight = continentalness * _chunkOptions.BaseTerrainHeight * erosionEffect + peaksValleys * (float)_chunkOptions.TerrainHeightRange * applyPV;
+
+        try
+        {
+
+            continentalnessMap[x, z] = continentalness;
+            erosionMap[x, z] = erosion;
+            peaksValleysMap[x, z] = peaksValleys;
+        }
+        catch { }
 
         return terrainHeight;
     }
@@ -430,7 +452,7 @@ public class Chunk
 
         texture.Apply();
         byte[] pngData = null;
-        //pngData = texture.EncodeToPNG();
+        pngData = texture.EncodeToPNG();
 
         string folderPath = Path.Combine(Application.dataPath, "NoiseDebug");
         if (!Directory.Exists(folderPath))
