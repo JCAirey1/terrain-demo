@@ -13,6 +13,8 @@ public class DebugWorldGenerator : MonoBehaviour
     private float[,] globalContinentalnessMap;
     private float[,] globalErosionMap;
     private float[,] globalPeaksValleysMap;
+    private float[,] globalPeaksValleysBoolMap;
+    private float[,] globalOctave1Map;
     #endregion
 
     #region DebugProperties
@@ -56,6 +58,8 @@ public class DebugWorldGenerator : MonoBehaviour
         globalContinentalnessMap = new float[worldPixelSize, worldPixelSize];
         globalErosionMap = new float[worldPixelSize, worldPixelSize];
         globalPeaksValleysMap = new float[worldPixelSize, worldPixelSize];
+        globalPeaksValleysBoolMap = new float[worldPixelSize, worldPixelSize];
+        globalOctave1Map = new float[worldPixelSize, worldPixelSize];
 
         for (int x = 0; x < WorldSizeInChunks; x++)
         {
@@ -70,12 +74,16 @@ public class DebugWorldGenerator : MonoBehaviour
                 WriteChunkNoiseToGlobalMap(chunk.GetLocalContinentalnessMap(), globalContinentalnessMap, x, z, _options.Width);
                 WriteChunkNoiseToGlobalMap(chunk.GetLocalErosionMap(), globalErosionMap, x, z, _options.Width);
                 WriteChunkNoiseToGlobalMap(chunk.GetLocalPeaksValleysMap(), globalPeaksValleysMap, x, z, _options.Width);
+                WriteChunkNoiseToGlobalMap(chunk.GetLocalPeaksValleysBoolMap(), globalPeaksValleysBoolMap, x, z, _options.Width);
+                WriteChunkNoiseToGlobalMap(chunk.GetLocalOctave1Map(), globalOctave1Map, x, z, _options.Width);
             }
         }
         Debug.Log(string.Format("{0} x {0} world generated.", (WorldSizeInChunks * _options.Width)));
         SaveNoiseMapAsImage(globalContinentalnessMap, "GlobalContinentalnessMap");
         SaveNoiseMapAsImage(globalErosionMap, "GlobalErosionMap");
         SaveNoiseMapAsImage(globalPeaksValleysMap, "GlobalPeaksValleysMap");
+        SaveNoiseMapAsImage(globalPeaksValleysBoolMap, "GlobalPeaksValleysBoolMap");
+        SaveNoiseMapAsImage(globalOctave1Map, "GlobalOctave1Map");
     }
 
     //creates a new chunk at a given Vector3Int position if it doesn't already exist:

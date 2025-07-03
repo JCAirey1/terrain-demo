@@ -22,6 +22,8 @@ public class Chunk
     float[,] continentalnessMap;
     float[,] erosionMap;
     float[,] peaksValleysMap;
+    float[,] peaksValleysBoolMap;
+    float[,] octave1Map;
 
     #endregion
 
@@ -83,6 +85,8 @@ public class Chunk
         continentalnessMap = new float[_chunkOptions.Width + 1, _chunkOptions.Width + 1];
         erosionMap = new float[_chunkOptions.Width + 1, _chunkOptions.Width + 1];
         peaksValleysMap = new float[_chunkOptions.Width + 1, _chunkOptions.Width + 1];
+        peaksValleysBoolMap = new float[_chunkOptions.Width + 1, _chunkOptions.Width + 1];
+        octave1Map = new float[_chunkOptions.Width + 1, _chunkOptions.Width + 1];
 
         for (int x = 0; x < _chunkOptions.Width + 1; x++)
         {
@@ -94,7 +98,7 @@ public class Chunk
                     {
                         //Using clamp to bound PerlinNoise as it intends to return a value 0.0f-1.0f but may sometimes be slightly out of that range
                         //Multipying by chunkOptions.Height will return a value in the range of 0-height
-                        float thisHeight = GetTerrianHeight(x + _position.x, z + _position.z, scale, octaves, persistance, lacunarity, _chunkOptions.WorldSeed);
+                        float thisHeight = GetTerrianHeight(x, _position.x, z, _position.z, scale, octaves, persistance, lacunarity, _chunkOptions.WorldSeed);
 
                         //y points below thisHeight will be negative (below terrain) and y points above this chunkOptions.Height will be positve and will render 
                         _terrainMap[x, y, z] = (float)y - thisHeight;
@@ -102,7 +106,7 @@ public class Chunk
                     else if (_chunkOptions.DebugUseSplineShaping)
                     {
                         //Continentalness, Erosion, Peaks & Valleys Spline Noise Shaping
-                        float thisHeight = GetTerrianHeightSpline(x + _position.x, z + _position.z, _chunkOptions.WorldSeed);
+                        float thisHeight = GetTerrianHeightSpline(x, _position.x, z, _position.z, _chunkOptions.WorldSeed);
 
                         //>0 = solid, <0 = air
                         //Debug.Log(thisHeight);
@@ -132,7 +136,7 @@ public class Chunk
     }
 
     //Configurable Perlin Noise sampler
-    public float GetTerrianHeight(int x, int z, float scale, int octaves, float persistance, float lacunarity, int seed)
+    public float GetTerrianHeight(int voxel_x, int world_position_x, int voxel_z, int world_position_z, float scale, int octaves, float persistance, float lacunarity, int seed)
     {
         System.Random prng = new System.Random(seed);
         int offsetX = prng.Next(int.MinValue, int.MaxValue); //To be added as an offset to the sampled points
@@ -142,6 +146,9 @@ public class Chunk
         float frequency = 1.5f;
         float noiseHeight = 0;
         float perlinValue = 0;
+
+        int x = voxel_x + world_position_x;
+        int z = voxel_z + world_position_z;
 
         for (int i = 0; i < octaves; i++)
         {
@@ -153,8 +160,12 @@ public class Chunk
 
             amplitude *= persistance;
             frequency *= lacunarity;
-        }
 
+            if (i == 1)
+            {
+                octave1Map[voxel_x, voxel_z] = perlinValue;
+            }
+        }
         return (float)_chunkOptions.TerrainHeightRange * noiseHeight + _chunkOptions.BaseTerrainHeight;
     }
 
@@ -195,17 +206,20 @@ public class Chunk
     }
 
     //Spline noise shaper with C, E, P&V
-    public float GetTerrianHeightSpline(int x, int z, int seed)
+    public float GetTerrianHeightSpline(int voxel_x, int world_position_x, int voxel_z, int world_position_z, int seed)
     {
         System.Random prng = new System.Random(seed);
         int offsetX = prng.Next(int.MinValue, int.MaxValue); //To be added as an offset to the sampled points
         int offsetZ = prng.Next(int.MinValue, int.MaxValue);
 
         float splineScale = 0.01f;
-        float continentalnessScale = 0.002f;
-        float erosionScale = 0.01f;
+        float continentalnessScale = 0.01f;
+        float erosionScale = 0.02f;
         float peaksValleysScale = 0.05f;
         float warpStrength = 30f;
+
+        int x = voxel_x + world_position_x;
+        int z = voxel_z + world_position_z;
 
         float nx = x * splineScale;
         float nz = z * splineScale;
@@ -226,14 +240,15 @@ public class Chunk
         float peaksValleys = Mathf.Sin(pv * Mathf.PI); // wavy pattern
         float applyPV = (continentalness > 0.5f && erosion < 0.4f) ? 1f : 0f;
 
-        float terrainHeight = continentalness * _chunkOptions.BaseTerrainHeight * erosionEffect + peaksValleys * (float)_chunkOptions.TerrainHeightRange * applyPV;
+        //float terrainHeight = continentalness * _chunkOptions.BaseTerrainHeight * erosionEffect + peaksValleys * (float)_chunkOptions.TerrainHeightRange * applyPV;
+        float terrainHeight = continentalness * _chunkOptions.BaseTerrainHeight * erosionEffect * (1 + (peaksValleys-0.5f) * applyPV);
 
         try
         {
-
-            continentalnessMap[x, z] = continentalness;
-            erosionMap[x, z] = erosion;
-            peaksValleysMap[x, z] = peaksValleys;
+            continentalnessMap[voxel_x, voxel_z] = continentalness;
+            erosionMap[voxel_x, voxel_z] = erosion;
+            peaksValleysMap[voxel_x, voxel_z] = peaksValleys;
+            peaksValleysBoolMap[voxel_x, voxel_z] = applyPV;
         }
         catch { }
 
@@ -444,6 +459,14 @@ public class Chunk
     public float[,] GetLocalPeaksValleysMap()
     {
         return peaksValleysMap;
+    }
+    public float[,] GetLocalPeaksValleysBoolMap()
+    {
+        return peaksValleysBoolMap;
+    }
+    public float[,] GetLocalOctave1Map()
+    {
+        return octave1Map;
     }
 
     //helper method to save noise maps to local png file for inspection
