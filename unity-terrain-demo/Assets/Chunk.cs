@@ -105,7 +105,7 @@ public class Chunk
                         float thisHeight = GetTerrianHeightSpline(x + _position.x, z + _position.z, _chunkOptions.WorldSeed);
 
                         //>0 = solid, <0 = air
-                        Debug.Log(thisHeight);
+                        //Debug.Log(thisHeight);
                         _terrainMap[x, y, z] = (float)y - thisHeight;
                     }
                     else if (!_chunkOptions.Noise2D)
@@ -126,9 +126,9 @@ public class Chunk
             }
         }
 
-        SaveNoiseMapAsImage(continentalnessMap, "ContinentalnessMap");
-        SaveNoiseMapAsImage(erosionMap, "ErosionMap");
-        SaveNoiseMapAsImage(peaksValleysMap, "PeaksValleysMap");
+        //SaveNoiseMapAsImage(continentalnessMap, "ContinentalnessMap");
+        //SaveNoiseMapAsImage(erosionMap, "ErosionMap");
+        //SaveNoiseMapAsImage(peaksValleysMap, "PeaksValleysMap");
     }
 
     //Configurable Perlin Noise sampler
@@ -431,6 +431,19 @@ public class Chunk
 
         return configurationIndex;
 
+    }
+
+    public float[,] GetLocalContinentalnessMap()
+    {
+        return continentalnessMap;
+    }
+    public float[,] GetLocalErosionMap()
+    {
+        return erosionMap;
+    }
+    public float[,] GetLocalPeaksValleysMap()
+    {
+        return peaksValleysMap;
     }
 
     //helper method to save noise maps to local png file for inspection

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using UnityEngine;
 using TerrainDemo;
 
@@ -9,6 +10,9 @@ public class DebugWorldGenerator : MonoBehaviour
     #region Privates
     private readonly Dictionary<Vector3Int, Chunk> _chunks = new Dictionary<Vector3Int, Chunk>(); //Storage for currently loaded Chunks
     private ChunkOptions _options = null;
+    private float[,] globalContinentalnessMap;
+    private float[,] globalErosionMap;
+    private float[,] globalPeaksValleysMap;
     #endregion
 
     #region DebugProperties
@@ -43,9 +47,15 @@ public class DebugWorldGenerator : MonoBehaviour
         Generate();
     }
 
+    
     void Generate()
     {
         _chunks.Clear();
+
+        int worldPixelSize = _options.Width * WorldSizeInChunks + 1; // +1 for overlap
+        globalContinentalnessMap = new float[worldPixelSize, worldPixelSize];
+        globalErosionMap = new float[worldPixelSize, worldPixelSize];
+        globalPeaksValleysMap = new float[worldPixelSize, worldPixelSize];
 
         for (int x = 0; x < WorldSizeInChunks; x++)
         {
@@ -56,9 +66,16 @@ public class DebugWorldGenerator : MonoBehaviour
                 chunk.Render();
                 _chunks.Add(chunkPos, chunk);
                 _chunks[chunkPos].chunkObject.transform.SetParent(transform); //put chunks under transform of the World Generator object
+
+                WriteChunkNoiseToGlobalMap(chunk.GetLocalContinentalnessMap(), globalContinentalnessMap, x, z, _options.Width);
+                WriteChunkNoiseToGlobalMap(chunk.GetLocalErosionMap(), globalErosionMap, x, z, _options.Width);
+                WriteChunkNoiseToGlobalMap(chunk.GetLocalPeaksValleysMap(), globalPeaksValleysMap, x, z, _options.Width);
             }
         }
         Debug.Log(string.Format("{0} x {0} world generated.", (WorldSizeInChunks * _options.Width)));
+        SaveNoiseMapAsImage(globalContinentalnessMap, "GlobalContinentalnessMap");
+        SaveNoiseMapAsImage(globalErosionMap, "GlobalErosionMap");
+        SaveNoiseMapAsImage(globalPeaksValleysMap, "GlobalPeaksValleysMap");
     }
 
     //creates a new chunk at a given Vector3Int position if it doesn't already exist:
@@ -183,6 +200,63 @@ public class DebugWorldGenerator : MonoBehaviour
 
         _options = newOptions;
         ReGenerate();
+    }
+
+    public void WriteChunkNoiseToGlobalMap(float[,] localMap, float[,] globalMap, int chunkX, int chunkZ, int chunkSize)
+    {
+        int globalX = 0;
+        int globalZ = 0;
+
+        for (int x = 0; x <= chunkSize; x++) // include edge
+        {
+            Debug.Log($"GlobalX {globalX}");
+            for (int z = 0; z <= chunkSize; z++)
+            {
+                globalX = chunkX * chunkSize + x;
+                globalZ = chunkZ * chunkSize + z;
+
+                // (Not Protecting bounds)
+                //globalMap[globalX, globalZ] = localMap[x, z];
+
+                // Protect bounds
+                //*
+                if (globalX < globalMap.GetLength(0) && globalZ < globalMap.GetLength(1))
+                {
+                    globalMap[globalX, globalZ] = localMap[x, z];
+                }
+                //*/
+            }
+        }
+    }
+
+    //helper method to save noise maps to local png file for inspection
+    void SaveNoiseMapAsImage(float[,] noiseMap, string name)
+    {
+        int width = noiseMap.GetLength(0);
+        int height = noiseMap.GetLength(1);
+        Texture2D texture = new Texture2D(width, height);
+
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                float value = Mathf.Clamp01(noiseMap[x, y]);
+                Color color = new Color(value, value, value);
+                texture.SetPixel(x, y, color);
+            }
+        }
+
+        texture.Apply();
+        byte[] pngData = null;
+        pngData = texture.EncodeToPNG();
+
+        string folderPath = Path.Combine(Application.dataPath, "NoiseDebug");
+        if (!Directory.Exists(folderPath))
+            Directory.CreateDirectory(folderPath);
+
+        string filePath = Path.Combine(folderPath, name + ".png");
+        File.WriteAllBytes(filePath, pngData);
+        Debug.Log("Saved " + name + " to " + filePath);
     }
 
     private ChunkOptions GetOptions() {
