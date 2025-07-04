@@ -32,7 +32,7 @@ public class Chunk
     private readonly Vector3Int _position;
     #endregion
 
-    public TerrainDemo.Logger MyLogger { get; } = new TerrainDemo.Logger();
+    public TerrainLogger Logger { get; } = new TerrainLogger();
 
     private Chunk() { }
 
@@ -426,6 +426,11 @@ public class Chunk
     float SampleTerrain(Vector3Int point)
     {
         return _terrainMap[point.x, point.y, point.z];
+    }
+
+    public float[,,] TerrainMap
+    {
+        get => _terrainMap;
     }
 
     int GetCubeConfiguration(float[] cube)

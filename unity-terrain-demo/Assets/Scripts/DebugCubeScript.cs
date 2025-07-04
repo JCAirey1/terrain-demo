@@ -38,14 +38,14 @@ public class DebugCubeScript : MonoBehaviour
     // Create an array of floats representing each corner of a cube and get the value from our terrainMap.
     float[] cube_corner_vals = new float[8];
 
-    public TerrainDemo.Logger MyLogger { get; } = new TerrainDemo.Logger();
+    public TerrainLogger MyLogger { get; } = new TerrainLogger();
 
     // Start is called before the first frame update
     void Start()
     {
         try
         {
-            MyLogger.LogInfo("Starting DebugCubeScript");
+            TerrainLogger.Log("Starting DebugCubeScript");
 
             meshFilter = GetComponent<MeshFilter>();
             ClearMeshData();
@@ -53,7 +53,7 @@ public class DebugCubeScript : MonoBehaviour
         } 
         catch (Exception ex)
         {
-            MyLogger.LogError(ex);
+            TerrainLogger.Error(ex.ToString());
         }
     }
 
@@ -99,7 +99,7 @@ public class DebugCubeScript : MonoBehaviour
         }
         catch (Exception ex)
         {
-            MyLogger.LogError(ex);
+            TerrainLogger.Error(ex.ToString());
         }
     }
 

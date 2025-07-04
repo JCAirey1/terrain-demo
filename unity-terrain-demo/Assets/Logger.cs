@@ -1,9 +1,6 @@
 ﻿using System;
-//using log4net;
-//using log4net.Appender;
-//using log4net.Core;
-//using log4net.Layout;
-//using log4net.Repository.Hierarchy;
+using System.IO;
+using UnityEngine;
 
 namespace TerrainDemo
 {
@@ -14,52 +11,69 @@ namespace TerrainDemo
         Error
     }
 
-    public class Logger
+    public class TerrainLogger
     {
-        //private static readonly ILog log = LogManager.GetLogger(typeof(Logger));
+        private static string logFilePath;
 
-        public Logger()
+        public TerrainLogger()
         {
-            //RollingFileAppender rollingFileAppender = new RollingFileAppender
-            //{
-            //    File = "logz.txt",                        // Log file path
-            //    AppendToFile = true,                      // Append or overwrite log file
-            //    MaximumFileSize = "5MB",                  // Max file size before rolling over
-            //    MaxSizeRollBackups = 10,                  // Max number of backup files to keep
-            //    Layout = new PatternLayout("%date [%thread] %-5level %logger - %message%newline") // Log format
-            //};
-
-            //// Step 2: Create the root logger and set its level
-            //Hierarchy hierarchy = (Hierarchy)LogManager.GetRepository();
-            //hierarchy.Root.Level = Level.Info; // Set the minimum level to INFO
-            //hierarchy.Root.AddAppender(rollingFileAppender); // Add the appender to the root logger
-
-            //// Step 3: Initialize log4net (activating the configuration)
-            //log4net.Config.BasicConfigurator.Configure(hierarchy);
+            SetLogPath();
         }
 
-        public void LogInfo(string message)
+        public static void Log(string message)
         {
-            Console.WriteLine(message);
-            //log.Info(message);
+            Write("INFO", message);
         }
 
-        public void LogDebug(string message)
+        public static void Warn(string message)
         {
-            Console.WriteLine(message);
-            //log.Debug(message);
+            Write("WARN", message);
         }
 
-        public void LogError(string message)
+        public static void Error(string message)
         {
-            Console.WriteLine(message);
-            //log.Error(message);
+            Write("ERROR", message);
         }
 
-        public void LogError(Exception ex)
+        private static void Write(string level, string message)
         {
-            Console.WriteLine(ex.ToString());
-            //log.Error(ex.ToString());
+            string timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
+            string formatted = $"[{timestamp}] [{level}] {message}";
+
+            DebugOutput(level, formatted);
+            File.AppendAllText(logFilePath, formatted + Environment.NewLine);
+        }
+
+        private static void SetLogPath()
+        {
+            string logsDir = Path.Combine(Application.dataPath, "../Logs");
+            Directory.CreateDirectory(logsDir);
+
+            string timestamp = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
+            logFilePath = Path.Combine(logsDir, $"log_{timestamp}.txt");
+
+            Log("Logger initialized.");
+        }
+
+        private static void DebugOutput(string level, string message)
+        {
+            if(string.IsNullOrEmpty(logFilePath))
+            {
+                SetLogPath();
+            }
+
+            switch (level)
+            {
+                case "ERROR":
+                    Debug.LogError(message);
+                    break;
+                case "WARN":
+                    Debug.LogWarning(message);
+                    break;
+                default:
+                    Debug.Log(message);
+                    break;
+            }
         }
     }
 }

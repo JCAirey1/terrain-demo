@@ -1,9 +1,9 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using TerrainDemo;
+using System.Linq;
 
 public class DebugWorldGenerator : MonoBehaviour
 {
@@ -61,6 +61,8 @@ public class DebugWorldGenerator : MonoBehaviour
         globalPeaksValleysBoolMap = new float[worldPixelSize, worldPixelSize];
         globalOctave1Map = new float[worldPixelSize, worldPixelSize];
 
+        TerrainLogger.Log("World generating");
+
         for (int x = 0; x < WorldSizeInChunks; x++)
         {
             for (int z = 0; z < WorldSizeInChunks; z++)
@@ -79,6 +81,10 @@ public class DebugWorldGenerator : MonoBehaviour
             }
         }
         Debug.Log(string.Format("{0} x {0} world generated.", (WorldSizeInChunks * _options.Width)));
+
+        TerrainLogger.Log("World generated ~");
+        TerrainLogger.Log(Newtonsoft.Json.JsonConvert.SerializeObject(_chunks.Select(chunk => new { id = chunk.Key, data = chunk.Value.TerrainMap})));
+        
         SaveNoiseMapAsImage(globalContinentalnessMap, "GlobalContinentalnessMap");
         SaveNoiseMapAsImage(globalErosionMap, "GlobalErosionMap");
         SaveNoiseMapAsImage(globalPeaksValleysMap, "GlobalPeaksValleysMap");
@@ -139,6 +145,8 @@ public class DebugWorldGenerator : MonoBehaviour
         if(newOptions.Equals(_options)) {
             return;
         }
+
+        _options ??= newOptions;
 
         Debug.Log("props updated");
 

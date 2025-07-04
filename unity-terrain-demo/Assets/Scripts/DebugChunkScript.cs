@@ -43,14 +43,14 @@ public class DebugChunkScript : MonoBehaviour
     int vertexCount = 0;
     int triangleCount = 0;
 
-    public TerrainDemo.Logger MyLogger { get; } = new TerrainDemo.Logger();
+    public TerrainLogger Logger { get; } = new TerrainLogger();
 
     // Start is called before the first frame update
     void Start()
     {
         try
         {
-            MyLogger.LogInfo("Starting DebugChunkScript");
+            TerrainLogger.Log("Starting DebugChunkScript");
 
             meshFilter = GetComponent<MeshFilter>();
             meshCollider = GetComponent<MeshCollider>();
@@ -62,7 +62,7 @@ public class DebugChunkScript : MonoBehaviour
         }
         catch (Exception ex)
         {
-            MyLogger.LogError(ex);
+            TerrainLogger.Error(ex.ToString());
         }
     }
 
@@ -81,7 +81,7 @@ public class DebugChunkScript : MonoBehaviour
         }
         catch (Exception ex)
         {
-            MyLogger.LogError(ex);
+            TerrainLogger.Error(ex.ToString());
         }
     }
 
