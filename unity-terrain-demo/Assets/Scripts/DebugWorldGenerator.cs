@@ -1,9 +1,9 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 using TerrainDemo;
-using System.Linq;
 
 public class DebugWorldGenerator : MonoBehaviour
 {
@@ -82,8 +82,8 @@ public class DebugWorldGenerator : MonoBehaviour
         }
         Debug.Log(string.Format("{0} x {0} world generated.", (WorldSizeInChunks * _options.Width)));
 
-        TerrainLogger.Log("World generated ~");
-        TerrainLogger.Log(Newtonsoft.Json.JsonConvert.SerializeObject(_chunks.Select(chunk => new { id = chunk.Key, data = chunk.Value.TerrainMap})));
+        TerrainLogger.Log("World generated, uncomment line below to serialize chunks to json file for debugging.");
+        //TerrainLogger.Log(Newtonsoft.Json.JsonConvert.SerializeObject(_chunks.Select(chunk => new { id = chunk.Key, data = chunk.Value.TerrainMap})));
         
         SaveNoiseMapAsImage(globalContinentalnessMap, "GlobalContinentalnessMap");
         SaveNoiseMapAsImage(globalErosionMap, "GlobalErosionMap");
