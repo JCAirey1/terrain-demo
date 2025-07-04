@@ -68,7 +68,7 @@ public class Chunk
 
     public void Render()
     {
-        PopulateTerrainMap(_position, _chunkOptions.WorldSizeInChunks, _chunkOptions.Scale, _chunkOptions.Octaves, _chunkOptions.Persistance, _chunkOptions.Lacunarity);
+        PopulateTerrainMap();
         CreateMeshData();
         BuildMesh();
     }
@@ -80,7 +80,7 @@ public class Chunk
     }
 
     // The data points for terrain are stored at the corners of our "cubes", so the terrainMap needs to be 1 larger than the width/height of our mesh.
-    void PopulateTerrainMap(Vector3Int _position, int WorldSizeInChunks, float scale, int octaves, float persistance, float lacunarity)
+    void PopulateTerrainMap()
     {
         continentalnessMap = new float[_chunkOptions.Width + 1, _chunkOptions.Width + 1];
         erosionMap = new float[_chunkOptions.Width + 1, _chunkOptions.Width + 1];
@@ -98,7 +98,7 @@ public class Chunk
                     {
                         //Using clamp to bound PerlinNoise as it intends to return a value 0.0f-1.0f but may sometimes be slightly out of that range
                         //Multipying by chunkOptions.Height will return a value in the range of 0-height
-                        float thisHeight = GetTerrianHeight(x, _position.x, z, _position.z, scale, octaves, persistance, lacunarity, _chunkOptions.WorldSeed);
+                        float thisHeight = GetTerrianHeight(x, _position.x, z, _position.z);
 
                         //y points below thisHeight will be negative (below terrain) and y points above this chunkOptions.Height will be positve and will render 
                         _terrainMap[x, y, z] = (float)y - thisHeight;
@@ -106,7 +106,7 @@ public class Chunk
                     else if (_chunkOptions.DebugUseSplineShaping)
                     {
                         //Continentalness, Erosion, Peaks & Valleys Spline Noise Shaping
-                        float thisHeight = GetTerrianHeightSpline(x, _position.x, z, _position.z, _chunkOptions.WorldSeed);
+                        float thisHeight = GetTerrianHeightSpline(x, _position.x, z, _position.z);
 
                         //>0 = solid, <0 = air
                         //Debug.Log(thisHeight);
@@ -116,7 +116,7 @@ public class Chunk
                     {
 
                         //3D Perlin Noise Function
-                        float noiseValue = GetTerrianHeight3D(x + _position.x, y + _position.y, z + _position.z, scale, octaves, persistance, lacunarity, _chunkOptions.WorldSeed);
+                        float noiseValue = GetTerrianHeight3D(x + _position.x, y + _position.y, z + _position.z);
 
                         //need to adjust parameters (namely Base Terrain Height) to visualize result. Removed notion of thisHeight which is purely surface level thinking
                         _terrainMap[x, y, z] = noiseValue;
@@ -136,11 +136,11 @@ public class Chunk
     }
 
     //Configurable Perlin Noise sampler
-    public float GetTerrianHeight(int voxel_x, int world_position_x, int voxel_z, int world_position_z, float scale, int octaves, float persistance, float lacunarity, int seed)
+    public float GetTerrianHeight(int voxel_x, int world_position_x, int voxel_z, int world_position_z)
     {
-        System.Random prng = new System.Random(seed);
-        int offsetX = prng.Next(int.MinValue, int.MaxValue); //To be added as an offset to the sampled points
-        int offsetZ = prng.Next(int.MinValue, int.MaxValue);
+        //System.Random prng = new System.Random(seed);
+        //int offsetX = prng.Next(int.MinValue, int.MaxValue); //To be added as an offset to the sampled points
+        //int offsetZ = prng.Next(int.MinValue, int.MaxValue);
 
         float amplitude = 1;
         float frequency = 1.5f;
@@ -150,16 +150,16 @@ public class Chunk
         int x = voxel_x + world_position_x;
         int z = voxel_z + world_position_z;
 
-        for (int i = 0; i < octaves; i++)
+        for (int i = 0; i < _chunkOptions.Octaves; i++)
         {
-            float sampleX = x / scale * frequency + (float)seed; //not working with offsetX, using worldSeed directly for now
-            float sampleZ = z / scale * frequency + (float)seed;
+            float sampleX = x / _chunkOptions.Scale * frequency + (float)_chunkOptions.WorldSeed; //not working with offsetX, using worldSeed directly for now
+            float sampleZ = z / _chunkOptions.Scale * frequency + (float)_chunkOptions.WorldSeed;
 
             perlinValue = Mathf.Clamp(Mathf.PerlinNoise(sampleX, sampleZ), 0.0f, 1.0f);
             noiseHeight += perlinValue * amplitude;
 
-            amplitude *= persistance;
-            frequency *= lacunarity;
+            amplitude *= _chunkOptions.Persistance;
+            frequency *= _chunkOptions.Lacunarity;
 
             if (i == 1)
             {
@@ -170,22 +170,22 @@ public class Chunk
     }
 
     //3D Perlin Noise Alternative Noise Function
-    public float GetTerrianHeight3D(int x, int y, int z, float scale, int octaves, float persistance, float lacunarity, int seed)
+    public float GetTerrianHeight3D(int x, int y, int z)
     {
-        System.Random prng = new System.Random(seed);
-        int offsetX = prng.Next(int.MinValue, int.MaxValue); //To be added as an offset to the sampled points
-        int offsetY = prng.Next(int.MinValue, int.MaxValue);
-        int offsetZ = prng.Next(int.MinValue, int.MaxValue);
+        //System.Random prng = new System.Random(_chunkOptions.WorldSeed);
+        //int offsetX = prng.Next(int.MinValue, int.MaxValue); //To be added as an offset to the sampled points
+        //int offsetY = prng.Next(int.MinValue, int.MaxValue);
+        //int offsetZ = prng.Next(int.MinValue, int.MaxValue);
 
         float amplitude = 1f;
         float frequency = 1.5f;
         float noiseHeight = 0f;
 
-        for (int i = 0; i < octaves; i++)
+        for (int i = 0; i < _chunkOptions.Octaves; i++)
         {
-            float sampleX = x / scale * frequency + (float)seed; //not working with offsetX, using worldSeed directly for now
-            float sampleY = y / scale * frequency + (float)seed;
-            float sampleZ = z / scale * frequency + (float)seed;
+            float sampleX = x / _chunkOptions.Scale * frequency + (float)_chunkOptions.WorldSeed; //not working with offsetX, using worldSeed directly for now
+            float sampleY = y / _chunkOptions.Scale * frequency + (float)_chunkOptions.WorldSeed;
+            float sampleZ = z / _chunkOptions.Scale * frequency + (float)_chunkOptions.WorldSeed;
 
             // Fake 3D Perlin noise by combining 2D noise samples
             float perlinXY = Mathf.PerlinNoise(sampleX, sampleY);
@@ -197,20 +197,19 @@ public class Chunk
 
             noiseHeight += perlinValue * amplitude;
 
-            amplitude *= persistance;
-            frequency *= lacunarity;
+            amplitude *= _chunkOptions.Persistance;
+            frequency *= _chunkOptions.Lacunarity;
         }
 
         return (float)_chunkOptions.TerrainHeightRange * noiseHeight + _chunkOptions.BaseTerrainHeight;
-
     }
 
     //Spline noise shaper with C, E, P&V
-    public float GetTerrianHeightSpline(int voxel_x, int world_position_x, int voxel_z, int world_position_z, int seed)
+    public float GetTerrianHeightSpline(int voxel_x, int world_position_x, int voxel_z, int world_position_z)
     {
-        System.Random prng = new System.Random(seed);
-        int offsetX = prng.Next(int.MinValue, int.MaxValue); //To be added as an offset to the sampled points
-        int offsetZ = prng.Next(int.MinValue, int.MaxValue);
+        //System.Random prng = new System.Random(_chunkOptions.WorldSeed);
+        //int offsetX = prng.Next(int.MinValue, int.MaxValue); //To be added as an offset to the sampled points
+        //int offsetZ = prng.Next(int.MinValue, int.MaxValue);
 
         float splineScale = 0.01f;
         float continentalnessScale = 0.01f;
@@ -306,11 +305,11 @@ public class Chunk
         // Get the configuration index of this cube.
         int configIndex = GetCubeConfiguration(cube);
 
-        // If the configuration of this cube is 0 or 255 (completely inside the terrain or completely outside of it) we don't need to do anything.
+        // If the configuration of this cube is 0 or 255 (completely inside the terrain or completely outside of it) we don't need to do anything.  
         if (configIndex == 0 || configIndex == 255)
             return;
 
-        // Loop through the triangles. There are never more than 5 triangles to a cube and only three vertices to a triangle.
+        // Loop through the triangles. There are never more than 5 triangles to a cube and only three vertices to a triangle.  
         int edgeIndex = 0;
         for (int i = 0; i < 5; i++)
         {
@@ -319,33 +318,33 @@ public class Chunk
                 if (!_chunkOptions.UseLists)
                     if (edgeIndex >= _trianglesArray.Length || edgeIndex >= _verticesArray.Length)
                     {
-                        return; // Prevent out-of-bounds exception
+                        return; // Prevent out-of-bounds exception  
                     }
 
-                // Get the current indice. We increment triangleIndex through each loop.
+                // Get the current indice. We increment triangleIndex through each loop.  
                 int indice = Constants.TriangleTable[configIndex, edgeIndex];
 
-                // If the current edgeIndex is -1, there are no more indices and we can exit the function.
+                // If the current edgeIndex is -1, there are no more indices and we can exit the function.  
                 if (indice == -1)
                     return;
 
-                // Get the vertices for the start and end of this edge.
+                // Get the vertices for the start and end of this edge.  
                 Vector3 vert1 = position + Constants.EdgeTable[indice, 0];
                 Vector3 vert2 = position + Constants.EdgeTable[indice, 1];
 
-                // Get the midpoint of this edge.
+                // Get the midpoint of this edge.  
                 Vector3 vertPosition;
                 if (_chunkOptions.SmoothTerrain)
                 {
-                    // Linear Interpolate to find the edge position
-                    // Get the terrain values at either end of our current edge from the cube array created above.
+                    // Linear Interpolate to find the edge position  
+                    // Get the terrain values at either end of our current edge from the cube array created above.  
                     float val1 = cube[CornerIndex(Constants.EdgeTable[indice, 0])];
                     float val2 = cube[CornerIndex(Constants.EdgeTable[indice, 1])];
 
-                    // Calculate the difference between the terrain values.
+                    // Calculate the difference between the terrain values.  
                     float difference = val2 - val1;
 
-                    // If the difference is 0, then the terrain passes through the middle.
+                    // If the difference is 0, then the terrain passes through the middle.  
                     // Can we delete this check?
                     /*
 					if (difference == 0)
@@ -354,12 +353,12 @@ public class Chunk
 					*/
                     difference = (_chunkOptions.IsoVal - val1) / difference;
 
-                    // Calculate the point along the edge that passes through.
+                    // Calculate the point along the edge that passes through.  
                     vertPosition = vert1 + ((vert2 - vert1) * difference);
                 }
                 else
                 {
-                    // Default to center point of the edge
+                    // Default to center point of the edge  
                     vertPosition = (vert1 + vert2) / 2f;
                 }
 

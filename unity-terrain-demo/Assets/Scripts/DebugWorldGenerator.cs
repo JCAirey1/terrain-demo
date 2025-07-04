@@ -255,10 +255,10 @@ public class DebugWorldGenerator : MonoBehaviour
         }
 
         texture.Apply();
-        byte[] pngData = null;
-        pngData = texture.EncodeToPNG();
+        byte[] pngData = texture.EncodeToPNG();
 
-        string folderPath = Path.Combine(Application.dataPath, "NoiseDebug");
+        string folderPath = Path.Combine(Application.dataPath, "../Logs/NoiseDebug");
+
         if (!Directory.Exists(folderPath))
             Directory.CreateDirectory(folderPath);
 
