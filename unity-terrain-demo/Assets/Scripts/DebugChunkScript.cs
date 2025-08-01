@@ -73,6 +73,8 @@ public class DebugChunkScript : MonoBehaviour
         {
             terrainMap = new float[width + 1, height + 1, width + 1];
             PopulateTerrainMap();
+            GetMinMax(terrainMap, out float minVal, out float maxVal);
+            Debug.Log($"TerrainMap Min: {minVal}, Max: {maxVal}");
             CreateMeshData();
             BuildMesh();
         }
@@ -105,8 +107,8 @@ public class DebugChunkScript : MonoBehaviour
                         //Multipying by height will return a value in the range of 0-height
                         float thisHeight = GetTerrianHeight(x + _position.x, z + _position.z, scale, octaves, persistance, lacunarity, worldSeed);
 
-                        //y points below thisHeight will be negative (below terrain) and y points above this Height will be positve and will render 
-                        terrainMap[x, y, z] = (float)y - thisHeight;
+                        //y points below thisHeight will be negative (below terrain) and y points above this Height will be positive and will render 
+                        terrainMap[x, y, z] = Mathf.Clamp((float)y - thisHeight, 0.0f, 1.0f);
                     }
                     else if (!noise2D)
                     {
@@ -115,7 +117,7 @@ public class DebugChunkScript : MonoBehaviour
                         float noiseValue = GetTerrianHeight3D(x + _position.x, y + _position.y, z + _position.z, scale, octaves, persistance, lacunarity, worldSeed);
 
                         //need to adjust parameters (namely Base Terrain Height) to visualize result. Removed notion of thisHeight which is purely surface level thinking
-                        terrainMap[x, y, z] = noiseValue;
+                        terrainMap[x, y, z] = Mathf.Clamp(noiseValue, 0.0f, 1.0f);
                     }
                     else
                     {
@@ -386,8 +388,31 @@ public class DebugChunkScript : MonoBehaviour
 
     }
 
-    // Draw Gizmos for each cube corner with grayscale based on value
+    // Generic helper for any numeric type (float, int, byte)
+    void GetMinMax(float[,,] array3D, out float minValue, out float maxValue)
+    {
+        minValue = float.MaxValue;
+        maxValue = float.MinValue;
 
+        int sizeX = array3D.GetLength(0);
+        int sizeY = array3D.GetLength(1);
+        int sizeZ = array3D.GetLength(2);
+
+        for (int x = 0; x < sizeX; x++)
+        {
+            for (int y = 0; y < sizeY; y++)
+            {
+                for (int z = 0; z < sizeZ; z++)
+                {
+                    float val = array3D[x, y, z];
+                    if (val < minValue) minValue = val;
+                    if (val > maxValue) maxValue = val;
+                }
+            }
+        }
+    }
+
+    // Draw Gizmos for each cube corner with grayscale based on value
     void OnDrawGizmos()
     {
         if (debugChunkWireframePersistence)
