@@ -72,10 +72,11 @@ public class DebugChunkScript : MonoBehaviour
         try
         {
             terrainMap = new byte[width + 1, height + 1, width + 1];
+            ClearMeshData(); //needed here when CreateMeshData is commented out
             PopulateTerrainMap();
-            GetMinMax(terrainMap, out byte minVal, out byte maxVal);
-            Debug.Log($"TerrainMap Min: {minVal}, Max: {maxVal}");
-            CreateMeshData();
+            //GetMinMax(terrainMap, out byte minVal, out byte maxVal);//Debug check for range of values stored
+            //Debug.Log($"TerrainMap Min: {minVal}, Max: {maxVal}"); //Debug display range of values stored
+            //CreateMeshData(); //commented out when running MarchCube in PopulateTerrainMap
             BuildMesh();
         }
         catch (Exception ex)
@@ -95,42 +96,88 @@ public class DebugChunkScript : MonoBehaviour
     // The data points for terrain are stored at the corners of our "cubes", so the terrainMap needs to be 1 larger than the width/height of our mesh.
     void PopulateTerrainMap()
     {
+        /*
         for (int x = 0; x < width + 1; x++)
         {
             for (int y = 0; y < height + 1; y++)
             {
                 for (int z = 0; z < width + 1; z++)
                 {
-                    if (noise2D)
-                    {
-                        //Using clamp to bound PerlinNoise as it intends to return a value 0.0f-1.0f but may sometimes be slightly out of that range
-                        //Multipying by height will return a value in the range of 0-height
-                        float thisHeight = GetTerrianHeight(x + _position.x, z + _position.z, scale, octaves, persistance, lacunarity, worldSeed);
-
-                        //y points below thisHeight will be negative (below terrain) and y points above this Height will be positive and will render 
-                        terrainMap[x, y, z] = (byte)(Mathf.Clamp((float)y - thisHeight, 0.0f, 1.0f) * 255f);
-                    }
-                    else if (!noise2D)
-                    {
-
-                        //3D Perlin Noise Function
-                        float noiseValue = GetTerrianHeight3D(x + _position.x, y + _position.y, z + _position.z, scale, octaves, persistance, lacunarity, worldSeed);
-
-                        //need to adjust parameters (namely Base Terrain Height) to visualize result. Removed notion of thisHeight which is purely surface level thinking
-                        terrainMap[x, y, z] = (byte)(Mathf.Clamp(noiseValue, 0.0f, 1.0f) * 255f);
-                    }
-                    else
-                    {
-                        Debug.Log("UNEXPECTED ERROR WITH NOISE FUNCITON SELECTION");
-                        return;
-                    }
-
-                    //Hard Coded Initial Noise Generation
-                    //float thisHeight = (float)height * Mathf.PerlinNoise((float)x / 16f * 1.5f + 0.001f, (float)z / 16f * 1.5f + 0.001f);
-                    //float thisHeight = (float)height * Mathf.PerlinNoise((float)x / scale * 1.5f + 0.001f, (float)z / scale * 1.5f + 0.001f);
+                    PopulateTerrainPoint(x, y, z);
                 }
             }
         }
+        //*/
+
+        //*
+        //First loop through and populate the Lower South East faces of the Chunk
+        for (int x = 0; x < width + 1; x++)
+        {
+            for (int z = 0; z < width + 1; z++)
+            {
+                PopulateTerrainPoint(x, 0, z); //y0 origin plane
+            }
+        }
+        for (int z = 0; z < width + 1; z++)
+        {
+            for (int y = 1; y < height + 1; y++)
+            {
+                PopulateTerrainPoint(0, y, z); //x0 origin plane
+            }
+        }
+        for (int x = 1; x < width + 1; x++)
+        {
+            for (int y = 1; y < height + 1; y++)
+            {
+                PopulateTerrainPoint(x, y, 0); //z0 origin plane
+            }
+        }
+
+        //Now build slices of the chunk vertically from bottom to top
+        for (int y = 1; y < height + 1; y++)
+        {
+            for (int x = 1; x < width + 1; x++)
+            {
+                for (int z = 1; z < width + 1; z++)
+                {
+                    PopulateTerrainPoint(x, y, z); //y0 origin plane
+                    MarchCube(new Vector3Int(x-1, y-1, z-1)); //Lower South East corner
+                }
+            }
+        }
+        //*/
+    }
+
+    //Given x, y, z position of the voxel corner, populate the terrain map point
+    void PopulateTerrainPoint(int x, int y, int z)
+    {
+        if (noise2D)
+        {
+            //Using clamp to bound PerlinNoise as it intends to return a value 0.0f-1.0f but may sometimes be slightly out of that range
+            //Multipying by height will return a value in the range of 0-height
+            float thisHeight = GetTerrianHeight(x + _position.x, z + _position.z, scale, octaves, persistance, lacunarity, worldSeed);
+
+            //y points below thisHeight will be negative (below terrain) and y points above this Height will be positive and will render 
+            terrainMap[x, y, z] = (byte)(Mathf.Clamp((float)y - thisHeight, 0.0f, 1.0f) * 255f);
+        }
+        else if (!noise2D)
+        {
+
+            //3D Perlin Noise Function
+            float noiseValue = GetTerrianHeight3D(x + _position.x, y + _position.y, z + _position.z, scale, octaves, persistance, lacunarity, worldSeed);
+
+            //need to adjust parameters (namely Base Terrain Height) to visualize result. Removed notion of thisHeight which is purely surface level thinking
+            terrainMap[x, y, z] = (byte)(Mathf.Clamp(noiseValue, 0.0f, 1.0f) * 255f);
+        }
+        else
+        {
+            Debug.Log("UNEXPECTED ERROR WITH NOISE FUNCITON SELECTION");
+            return;
+        }
+
+        //Hard Coded Initial Noise Generation
+        //float thisHeight = (float)height * Mathf.PerlinNoise((float)x / 16f * 1.5f + 0.001f, (float)z / 16f * 1.5f + 0.001f);
+        //float thisHeight = (float)height * Mathf.PerlinNoise((float)x / scale * 1.5f + 0.001f, (float)z / scale * 1.5f + 0.001f);
     }
 
     //Configurable Perlin Noise sampler
