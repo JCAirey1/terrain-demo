@@ -21,7 +21,7 @@ public class DebugChunkScript : MonoBehaviour
     public int width = 16;
     public int height = 32;
     [Range(0f, 1f)] public float iso_val = 0.5f; // Isosurface Value, surface that represents points of a constant value
-    float[,,] terrainMap; //3D storage for terrain values that we will sample when generating the mesh of type TerrainPoint
+    byte[,,] terrainMap; //3D storage for terrain values that we will sample when generating the mesh of type TerrainPoint
     public float BaseTerrainHeight = 16f; //minimum height of terrain before modification (i.e sea level)
     public float TerrainHeightRange = 12f; //the max height above BaseTerrainHeight our terrain will generate to
     Vector3Int _position = new Vector3Int(0, 0, 0);
@@ -54,7 +54,7 @@ public class DebugChunkScript : MonoBehaviour
 
             meshFilter = GetComponent<MeshFilter>();
             meshCollider = GetComponent<MeshCollider>();
-            terrainMap = new float[width + 1, height + 1, width + 1];
+            terrainMap = new byte[width + 1, height + 1, width + 1];
             PopulateTerrainMap();
             verticesArray = new Vector3[width * width * height * 15]; //max 5 triangles per voxel, 3 points each
             trianglesArray = new int[width * width * height * 5]; //max 5 triangles per voxel
@@ -71,9 +71,9 @@ public class DebugChunkScript : MonoBehaviour
     {
         try
         {
-            terrainMap = new float[width + 1, height + 1, width + 1];
+            terrainMap = new byte[width + 1, height + 1, width + 1];
             PopulateTerrainMap();
-            GetMinMax(terrainMap, out float minVal, out float maxVal);
+            GetMinMax(terrainMap, out byte minVal, out byte maxVal);
             Debug.Log($"TerrainMap Min: {minVal}, Max: {maxVal}");
             CreateMeshData();
             BuildMesh();
@@ -108,7 +108,7 @@ public class DebugChunkScript : MonoBehaviour
                         float thisHeight = GetTerrianHeight(x + _position.x, z + _position.z, scale, octaves, persistance, lacunarity, worldSeed);
 
                         //y points below thisHeight will be negative (below terrain) and y points above this Height will be positive and will render 
-                        terrainMap[x, y, z] = Mathf.Clamp((float)y - thisHeight, 0.0f, 1.0f);
+                        terrainMap[x, y, z] = (byte)(Mathf.Clamp((float)y - thisHeight, 0.0f, 1.0f) * 255f);
                     }
                     else if (!noise2D)
                     {
@@ -117,7 +117,7 @@ public class DebugChunkScript : MonoBehaviour
                         float noiseValue = GetTerrianHeight3D(x + _position.x, y + _position.y, z + _position.z, scale, octaves, persistance, lacunarity, worldSeed);
 
                         //need to adjust parameters (namely Base Terrain Height) to visualize result. Removed notion of thisHeight which is purely surface level thinking
-                        terrainMap[x, y, z] = Mathf.Clamp(noiseValue, 0.0f, 1.0f);
+                        terrainMap[x, y, z] = (byte)(Mathf.Clamp(noiseValue, 0.0f, 1.0f) * 255f);
                     }
                     else
                     {
@@ -366,7 +366,7 @@ public class DebugChunkScript : MonoBehaviour
 
     float SampleTerrain(Vector3Int point)
     {
-        return terrainMap[point.x, point.y, point.z];
+        return terrainMap[point.x, point.y, point.z] / 255f;
     }
 
     int GetCubeConfiguration(float[] cube)
@@ -389,10 +389,10 @@ public class DebugChunkScript : MonoBehaviour
     }
 
     // Generic helper for any numeric type (float, int, byte)
-    void GetMinMax(float[,,] array3D, out float minValue, out float maxValue)
+    void GetMinMax(byte[,,] array3D, out byte minValue, out byte maxValue)
     {
-        minValue = float.MaxValue;
-        maxValue = float.MinValue;
+        minValue = byte.MaxValue;
+        maxValue = byte.MinValue;
 
         int sizeX = array3D.GetLength(0);
         int sizeY = array3D.GetLength(1);
@@ -404,7 +404,7 @@ public class DebugChunkScript : MonoBehaviour
             {
                 for (int z = 0; z < sizeZ; z++)
                 {
-                    float val = array3D[x, y, z];
+                    byte val = array3D[x, y, z];
                     if (val < minValue) minValue = val;
                     if (val > maxValue) maxValue = val;
                 }
@@ -456,7 +456,7 @@ public class DebugChunkScript : MonoBehaviour
             {
                 for (int z = 0; z < width + 1; z++)
                 {
-                    float val = terrainMap[x, y, z];
+                    float val = terrainMap[x, y, z] / 255f;
 
                     // Convert the scalar value to a grayscale color.
                     float intensity = Mathf.Clamp01(val); // assumes values roughly between 0–1
