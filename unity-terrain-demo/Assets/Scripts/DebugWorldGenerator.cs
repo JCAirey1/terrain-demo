@@ -8,7 +8,7 @@ using TerrainDemo;
 public class DebugWorldGenerator : MonoBehaviour
 {
     #region Privates
-    private readonly Dictionary<Vector3Int, Chunk> _chunks = new Dictionary<Vector3Int, Chunk>(); //Storage for currently loaded Chunks
+    private readonly Dictionary<Vector3Int, Chunk> _chunks = new(); //Storage for currently loaded Chunks
     private ChunkOptions _options = null;
     private float[,] globalContinentalnessMap;
     private float[,] globalErosionMap;
@@ -41,18 +41,12 @@ public class DebugWorldGenerator : MonoBehaviour
     public bool DebugChunkVoxelValPersistence = false;
     public bool DebugUseSplineShaping = true;
     public bool DebugSaveNoiseMaps = false;
+    public bool AlwaysUpdate = false;
     #endregion
 
     void Start()
     {
         _options = GetOptions();
-        Generate();
-    }
-
-    
-    void Generate()
-    {
-        _chunks.Clear();
 
         int worldPixelSize = _options.Width * WorldSizeInChunks + 1; // +1 for overlap
         globalContinentalnessMap = new float[worldPixelSize, worldPixelSize];
@@ -61,13 +55,21 @@ public class DebugWorldGenerator : MonoBehaviour
         globalPeaksValleysBoolMap = new float[worldPixelSize, worldPixelSize];
         globalOctave1Map = new float[worldPixelSize, worldPixelSize];
 
+        Generate();
+    }
+
+    
+    void Generate()
+    {
+        _chunks.Clear();
+
         TerrainLogger.Log("World generating");
 
         for (int x = 0; x < WorldSizeInChunks; x++)
         {
             for (int z = 0; z < WorldSizeInChunks; z++)
             {
-                Vector3Int chunkPos = new Vector3Int(x * _options.Width, 0, z * _options.Width);
+                var chunkPos = new Vector3Int(x * _options.Width, 0, z * _options.Width);
                 var chunk = new Chunk(chunkPos, _options);
                 chunk.Render();
                 _chunks.Add(chunkPos, chunk);
@@ -142,7 +144,7 @@ public class DebugWorldGenerator : MonoBehaviour
     {
         var newOptions = GetOptions();
 
-        if(newOptions.Equals(_options)) {
+        if(!AlwaysUpdate && newOptions.Equals(_options)) {
             return;
         }
 
@@ -225,7 +227,6 @@ public class DebugWorldGenerator : MonoBehaviour
 
         for (int x = 0; x <= chunkSize; x++) // include edge
         {
-            Debug.Log($"GlobalX {globalX}");
             for (int z = 0; z <= chunkSize; z++)
             {
                 globalX = chunkX * chunkSize + x;
@@ -272,7 +273,6 @@ public class DebugWorldGenerator : MonoBehaviour
 
         string filePath = Path.Combine(folderPath, name + ".png");
         File.WriteAllBytes(filePath, pngData);
-        Debug.Log("Saved " + name + " to " + filePath);
     }
 
     private ChunkOptions GetOptions() {

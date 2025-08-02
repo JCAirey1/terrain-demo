@@ -150,7 +150,6 @@ public class Chunk
         float amplitude = 1;
         float frequency = 1.5f;
         float noiseHeight = 0;
-        float perlinValue = 0;
 
         int x = voxel_x + world_position_x;
         int z = voxel_z + world_position_z;
@@ -160,7 +159,7 @@ public class Chunk
             float sampleX = x / _chunkOptions.Scale * frequency + (float)_chunkOptions.WorldSeed; //not working with offsetX, using worldSeed directly for now
             float sampleZ = z / _chunkOptions.Scale * frequency + (float)_chunkOptions.WorldSeed;
 
-            perlinValue = Mathf.Clamp(Mathf.PerlinNoise(sampleX, sampleZ), 0.0f, 1.0f);
+            float perlinValue = Mathf.Clamp(Mathf.PerlinNoise(sampleX, sampleZ), 0.0f, 1.0f);
             noiseHeight += perlinValue * amplitude;
 
             amplitude *= _chunkOptions.Persistance;
@@ -216,7 +215,6 @@ public class Chunk
         //int offsetX = prng.Next(int.MinValue, int.MaxValue); //To be added as an offset to the sampled points
         //int offsetZ = prng.Next(int.MinValue, int.MaxValue);
 
-        float splineScale = 0.01f;
         float continentalnessScale = 0.01f;
         float erosionScale = 0.02f;
         float peaksValleysScale = 0.05f;
@@ -224,9 +222,6 @@ public class Chunk
 
         int x = voxel_x + world_position_x;
         int z = voxel_z + world_position_z;
-
-        float nx = x * splineScale;
-        float nz = z * splineScale;
 
         // Continentalness: base landmass shape
         float continentalness = Mathf.PerlinNoise(x * continentalnessScale, z * continentalnessScale);
@@ -245,7 +240,7 @@ public class Chunk
         float applyPV = (continentalness > 0.5f && erosion < 0.4f) ? 1f : 0f;
 
         //float terrainHeight = continentalness * _chunkOptions.BaseTerrainHeight * erosionEffect + peaksValleys * (float)_chunkOptions.TerrainHeightRange * applyPV;
-        float terrainHeight = continentalness * _chunkOptions.BaseTerrainHeight * erosionEffect * (1 + (peaksValleys-0.5f) * applyPV);
+        float terrainHeight = continentalness * _chunkOptions.BaseTerrainHeight * erosionEffect * (1 + (peaksValleys - 0.5f) * applyPV);
 
         try
         {
@@ -298,13 +293,13 @@ public class Chunk
 
     void MarchCube(Vector3Int position)
     {
-        //Sample terrain values at each corner of the cube
-        float[] cube = new float[8]; //8 corners in a cube
+        Span<float> cube = stackalloc float[8]; // stack-allocated, fast
         int configIndex = 0;
 
         for (int i = 0; i < 8; i++)
         {
-            cube[i] = SampleTerrain(position + Constants.CornerTableInt[i]);
+            Vector3Int point = position + Constants.CornerTableInt[i];
+            cube[i] = _terrainMap[point.x, point.y, point.z];
 
             if (cube[i] > _chunkOptions.IsoVal)
                 configIndex |= 1 << i;
@@ -437,7 +432,7 @@ public class Chunk
     {
         get => _terrainMap;
     }
-    
+
     public float[,] GetLocalContinentalnessMap()
     {
         return continentalnessMap;
@@ -462,30 +457,30 @@ public class Chunk
     //helper method to save noise maps to local png file for inspection
     void SaveNoiseMapAsImage(float[,] noiseMap, string name)
     {
-int width = noiseMap.GetLength(0);
-    int height = noiseMap.GetLength(1);
-    Texture2D texture = new Texture2D(width, height);
+        int width = noiseMap.GetLength(0);
+        int height = noiseMap.GetLength(1);
+        Texture2D texture = new Texture2D(width, height);
 
-    for (int x = 0; x < width; x++)
-    {
-for (int y = 0; y < height; y++)
-    {
-float value = Mathf.Clamp01(noiseMap[x, y]);
-    Color color = new Color(value, value, value);
-    texture.SetPixel(x, y, color);
-    }
-}
+        for (int x = 0; x < width; x++)
+        {
+            for (int y = 0; y < height; y++)
+            {
+                float value = Mathf.Clamp01(noiseMap[x, y]);
+                Color color = new Color(value, value, value);
+                texture.SetPixel(x, y, color);
+            }
+        }
 
-    texture.Apply();
-    byte[] pngData = null;
-    pngData = texture.EncodeToPNG();
+        texture.Apply();
+        byte[] pngData = null;
+        pngData = texture.EncodeToPNG();
 
-    string folderPath = Path.Combine(Application.dataPath, "NoiseDebug");
-    if (!Directory.Exists(folderPath))
-    Directory.CreateDirectory(folderPath);
+        string folderPath = Path.Combine(Application.dataPath, "NoiseDebug");
+        if (!Directory.Exists(folderPath))
+            Directory.CreateDirectory(folderPath);
 
-    string filePath = Path.Combine(folderPath, name + ".png");
-    File.WriteAllBytes(filePath, pngData);
-    Debug.Log("Saved " + name + " to " + filePath);
+        string filePath = Path.Combine(folderPath, name + ".png");
+        File.WriteAllBytes(filePath, pngData);
+        Debug.Log("Saved " + name + " to " + filePath);
     }
 }

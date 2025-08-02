@@ -6,43 +6,42 @@ namespace TerrainDemo
     {
         public static Vector3[] CornerTable = new Vector3[8]
         {
-            new Vector3(0, 0, 0),
-            new Vector3(1, 0, 0),
-            new Vector3(1, 1, 0),
-            new Vector3(0, 1, 0),
-            new Vector3(0, 0, 1),
-            new Vector3(1, 0, 1),
-            new Vector3(1, 1, 1),
-            new Vector3(0, 1, 1)
+            new(0, 0, 0),
+            new(1, 0, 0),
+            new(1, 1, 0),
+            new(0, 1, 0),
+            new(0, 0, 1),
+            new(1, 0, 1),
+            new(1, 1, 1),
+            new(0, 1, 1)
         };
 
         public static Vector3Int[] CornerTableInt = new Vector3Int[8] {
 
-            new Vector3Int(0, 0, 0),
-            new Vector3Int(1, 0, 0),
-            new Vector3Int(1, 1, 0),
-            new Vector3Int(0, 1, 0),
-            new Vector3Int(0, 0, 1),
-            new Vector3Int(1, 0, 1),
-            new Vector3Int(1, 1, 1),
-            new Vector3Int(0, 1, 1)
-
+            new(0, 0, 0),
+            new(1, 0, 0),
+            new(1, 1, 0),
+            new(0, 1, 0),
+            new(0, 0, 1),
+            new(1, 0, 1),
+            new(1, 1, 1),
+            new(0, 1, 1)
         };
 
         public static Vector3[,] EdgeTable = new Vector3[12, 2]
         {
-            { new Vector3(0.0f, 0.0f, 0.0f), new Vector3(1.0f, 0.0f, 0.0f) },
-            { new Vector3(1.0f, 0.0f, 0.0f), new Vector3(1.0f, 1.0f, 0.0f) },
-            { new Vector3(0.0f, 1.0f, 0.0f), new Vector3(1.0f, 1.0f, 0.0f) },
-            { new Vector3(0.0f, 0.0f, 0.0f), new Vector3(0.0f, 1.0f, 0.0f) },
-            { new Vector3(0.0f, 0.0f, 1.0f), new Vector3(1.0f, 0.0f, 1.0f) },
-            { new Vector3(1.0f, 0.0f, 1.0f), new Vector3(1.0f, 1.0f, 1.0f) },
-            { new Vector3(0.0f, 1.0f, 1.0f), new Vector3(1.0f, 1.0f, 1.0f) },
-            { new Vector3(0.0f, 0.0f, 1.0f), new Vector3(0.0f, 1.0f, 1.0f) },
-            { new Vector3(0.0f, 0.0f, 0.0f), new Vector3(0.0f, 0.0f, 1.0f) },
-            { new Vector3(1.0f, 0.0f, 0.0f), new Vector3(1.0f, 0.0f, 1.0f) },
-            { new Vector3(1.0f, 1.0f, 0.0f), new Vector3(1.0f, 1.0f, 1.0f) },
-            { new Vector3(0.0f, 1.0f, 0.0f), new Vector3(0.0f, 1.0f, 1.0f) }
+            { new(0.0f, 0.0f, 0.0f), new (1.0f, 0.0f, 0.0f) },
+            { new(1.0f, 0.0f, 0.0f), new (1.0f, 1.0f, 0.0f) },
+            { new(0.0f, 1.0f, 0.0f), new (1.0f, 1.0f, 0.0f) },
+            { new(0.0f, 0.0f, 0.0f), new (0.0f, 1.0f, 0.0f) },
+            { new(0.0f, 0.0f, 1.0f), new (1.0f, 0.0f, 1.0f) },
+            { new(1.0f, 0.0f, 1.0f), new (1.0f, 1.0f, 1.0f) },
+            { new(0.0f, 1.0f, 1.0f), new (1.0f, 1.0f, 1.0f) },
+            { new(0.0f, 0.0f, 1.0f), new (0.0f, 1.0f, 1.0f) },
+            { new(0.0f, 0.0f, 0.0f), new (0.0f, 0.0f, 1.0f) },
+            { new(1.0f, 0.0f, 0.0f), new (1.0f, 0.0f, 1.0f) },
+            { new(1.0f, 1.0f, 0.0f), new (1.0f, 1.0f, 1.0f) },
+            { new(0.0f, 1.0f, 0.0f), new (0.0f, 1.0f, 1.0f) }
         };
 
         public static int[,] TriangleTable = new int[,]
