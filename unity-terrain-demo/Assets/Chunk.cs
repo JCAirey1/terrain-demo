@@ -300,7 +300,7 @@ public class Chunk
     {
         //Sample terrain values at each corner of the cube
         float[] cube = new float[8]; //8 corners in a cube
-                int configIndex = 0;
+        int configIndex = 0;
 
         for (int i = 0; i < 8; i++)
         {
@@ -341,25 +341,25 @@ public class Chunk
                 Vector3 vertPosition;
                 if (_chunkOptions.SmoothTerrain)
                 {
-     // Linear Interpolate to find the edge position  
-     // Get the terrain values at either end of our current edge from the cube array created above.  
-     float val1 = cube[CornerIndex(Constants.EdgeTable[indice, 0])];
-     float val2 = cube[CornerIndex(Constants.EdgeTable[indice, 1])];
+                   // Linear Interpolate to find the edge position  
+                   // Get the terrain values at either end of our current edge from the cube array created above.  
+                   float val1 = cube[CornerIndex(Constants.EdgeTable[indice, 0])];
+                   float val2 = cube[CornerIndex(Constants.EdgeTable[indice, 1])];
 
-     // Calculate the difference between the terrain values.  
-     float difference = val2 - val1;
+                   // Calculate the difference between the terrain values.  
+                   float difference = val2 - val1;
 
-     // If the difference is 0, then the terrain passes through the middle.  
-     // Can we delete this check?
-     /*
-					if (difference == 0)
-					difference = iso_val;
-					else
-					*/
-     difference = (_chunkOptions.IsoVal - val1) / difference;
+                   // If the difference is 0, then the terrain passes through the middle.  
+                   // Can we delete this check?
+                   /*
+                    if (difference == 0)
+                     difference = iso_val;
+                    else
+                    */
+                   difference = (_chunkOptions.IsoVal - val1) / difference;
 
-     // Calculate the point along the edge that passes through.  
-     vertPosition = vert1 + ((vert2 - vert1) * difference);
+                   // Calculate the point along the edge that passes through.  
+                   vertPosition = vert1 + ((vert2 - vert1) * difference);
                 }
                 else
                 {
