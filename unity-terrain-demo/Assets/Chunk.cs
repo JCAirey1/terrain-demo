@@ -297,13 +297,15 @@ public class Chunk
     {
         //Sample terrain values at each corner of the cube
         float[] cube = new float[8]; //8 corners in a cube
+        int configIndex = 0;
+
         for (int i = 0; i < 8; i++)
         {
             cube[i] = SampleTerrain(position + Constants.CornerTableInt[i]);
+            
+            if (cube[i] > _chunkOptions.IsoVal)
+                configIndex |= 1 << i;
         }
-
-        // Get the configuration index of this cube.
-        int configIndex = GetCubeConfiguration(cube);
 
         // If the configuration of this cube is 0 or 255 (completely inside the terrain or completely outside of it) we don't need to do anything.  
         if (configIndex == 0 || configIndex == 255)
@@ -432,26 +434,7 @@ public class Chunk
     {
         get => _terrainMap;
     }
-
-    int GetCubeConfiguration(float[] cube)
-    {
-
-        // Starting with a configuration of zero, loop through each point in the cube and check if it is below the terrain surface.
-        int configurationIndex = 0;
-        for (int i = 0; i < 8; i++)
-        {
-
-            // If it is, use bit-magic to the set the corresponding bit to 1. So if only the 3rd point in the cube was below
-            // the surface, the bit would look like 00100000, which represents the integer value 32.
-            if (cube[i] > _chunkOptions.IsoVal)
-                configurationIndex |= 1 << i;
-
-        }
-
-        return configurationIndex;
-
-    }
-
+    
     public float[,] GetLocalContinentalnessMap()
     {
         return continentalnessMap;
