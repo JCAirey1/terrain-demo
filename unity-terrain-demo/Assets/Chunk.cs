@@ -1,7 +1,8 @@
-﻿using System.Collections.Generic;
-using UnityEngine;
-using TerrainDemo;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using TerrainDemo;
+using UnityEngine;
 
 public class Chunk
 {
@@ -17,13 +18,14 @@ public class Chunk
     private readonly MeshFilter _meshFilter;
     private readonly MeshCollider _meshCollider;
     private readonly MeshRenderer _meshRenderer;
-    private float[,,] _terrainMap;
+    private readonly float[,,] _terrainMap;
+    private readonly Mesh _mesh;
 
-    float[,] continentalnessMap;
-    float[,] erosionMap;
-    float[,] peaksValleysMap;
-    float[,] peaksValleysBoolMap;
-    float[,] octave1Map;
+    private float[,] continentalnessMap;
+    private float[,] erosionMap;
+    private float[,] peaksValleysMap;
+    private float[,] peaksValleysBoolMap;
+    private float[,] octave1Map;
 
     #endregion
 
@@ -48,14 +50,17 @@ public class Chunk
         _position = position;
         chunkObject.transform.position = _chunkPosition;
 
+        _mesh = new Mesh();
         _meshFilter = chunkObject.AddComponent<MeshFilter>();
+        _meshFilter.mesh = _mesh;
         _meshCollider = chunkObject.AddComponent<MeshCollider>();
+        _meshCollider.sharedMesh = _mesh;
         _meshRenderer = chunkObject.AddComponent<MeshRenderer>();
-
-        Material defaultMaterial = new Material(Shader.Find("Standard")); // Load the built-in Default-Diffuse material
-        _meshRenderer.material = defaultMaterial;
+        _meshRenderer.material = new(Shader.Find("Standard")); // Load the built-in Default-Diffuse material
 
         _terrainMap = new float[chunkOptions.Width + 1, chunkOptions.Height + 1, chunkOptions.Width + 1]; //needs to be plus one or you'll get an index out of range error
+        _verticesArray = new Vector3[_chunkOptions.Width * _chunkOptions.Width * _chunkOptions.Height * 15]; //max 5 triangles per voxel, 3 points each
+        _trianglesArray = new int[_chunkOptions.Width * _chunkOptions.Width * _chunkOptions.Height * 5];
     }
 
     public void SetOptions(ChunkOptions chunkOptions)
@@ -258,8 +263,6 @@ public class Chunk
     {
         _verticesList.Clear();
         _trianglesList.Clear();
-        _verticesArray = new Vector3[_chunkOptions.Width * _chunkOptions.Width * _chunkOptions.Height * 15]; //max 5 triangles per voxel, 3 points each
-        _trianglesArray = new int[_chunkOptions.Width * _chunkOptions.Width * _chunkOptions.Height * 5]; //max 5 triangles per voxel
         _vertexCount = 0;
         _triangleCount = 0;
     }
@@ -268,6 +271,8 @@ public class Chunk
     {
         ClearMeshData();
 
+        var point = new Vector3Int(0, 0, 0);
+
         //looking at the cubes, not the points, so you only need to loop the _width number and not the _width + 1 numbers
         for (int x = 0; x < _chunkOptions.Width; x++)
         {
@@ -275,7 +280,8 @@ public class Chunk
             {
                 for (int z = 0; z < _chunkOptions.Width; z++)
                 {
-                    MarchCube(new Vector3Int(x, y, z));
+                    point.Set(x, y, z);
+                    MarchCube(point);
                 }
             }
         }
@@ -285,24 +291,21 @@ public class Chunk
 
     void BuildMesh()
     {
-        Mesh mesh = new Mesh();
-        mesh.vertices = _chunkOptions.UseLists ? _verticesList.ToArray() : _verticesArray;
-        mesh.triangles = _chunkOptions.UseLists ? _trianglesList.ToArray() : _trianglesArray;
-        mesh.RecalculateNormals();
-        _meshFilter.mesh = mesh;
-        _meshCollider.sharedMesh = mesh;
+        _mesh.vertices = _chunkOptions.UseLists ? _verticesList.ToArray() : _verticesArray[.._vertexCount];
+        _mesh.triangles = _chunkOptions.UseLists ? _trianglesList.ToArray() : _trianglesArray[.._vertexCount];
+        _mesh.RecalculateNormals();
     }
 
     void MarchCube(Vector3Int position)
     {
         //Sample terrain values at each corner of the cube
         float[] cube = new float[8]; //8 corners in a cube
-        int configIndex = 0;
+                int configIndex = 0;
 
         for (int i = 0; i < 8; i++)
         {
             cube[i] = SampleTerrain(position + Constants.CornerTableInt[i]);
-            
+
             if (cube[i] > _chunkOptions.IsoVal)
                 configIndex |= 1 << i;
         }
@@ -338,25 +341,25 @@ public class Chunk
                 Vector3 vertPosition;
                 if (_chunkOptions.SmoothTerrain)
                 {
-                    // Linear Interpolate to find the edge position  
-                    // Get the terrain values at either end of our current edge from the cube array created above.  
-                    float val1 = cube[CornerIndex(Constants.EdgeTable[indice, 0])];
-                    float val2 = cube[CornerIndex(Constants.EdgeTable[indice, 1])];
+     // Linear Interpolate to find the edge position  
+     // Get the terrain values at either end of our current edge from the cube array created above.  
+     float val1 = cube[CornerIndex(Constants.EdgeTable[indice, 0])];
+     float val2 = cube[CornerIndex(Constants.EdgeTable[indice, 1])];
 
-                    // Calculate the difference between the terrain values.  
-                    float difference = val2 - val1;
+     // Calculate the difference between the terrain values.  
+     float difference = val2 - val1;
 
-                    // If the difference is 0, then the terrain passes through the middle.  
-                    // Can we delete this check?
-                    /*
+     // If the difference is 0, then the terrain passes through the middle.  
+     // Can we delete this check?
+     /*
 					if (difference == 0)
-						difference = iso_val;
+					difference = iso_val;
 					else
 					*/
-                    difference = (_chunkOptions.IsoVal - val1) / difference;
+     difference = (_chunkOptions.IsoVal - val1) / difference;
 
-                    // Calculate the point along the edge that passes through.  
-                    vertPosition = vert1 + ((vert2 - vert1) * difference);
+     // Calculate the point along the edge that passes through.  
+     vertPosition = vert1 + ((vert2 - vert1) * difference);
                 }
                 else
                 {
@@ -459,30 +462,30 @@ public class Chunk
     //helper method to save noise maps to local png file for inspection
     void SaveNoiseMapAsImage(float[,] noiseMap, string name)
     {
-        int width = noiseMap.GetLength(0);
-        int height = noiseMap.GetLength(1);
-        Texture2D texture = new Texture2D(width, height);
+int width = noiseMap.GetLength(0);
+    int height = noiseMap.GetLength(1);
+    Texture2D texture = new Texture2D(width, height);
 
-        for (int x = 0; x < width; x++)
-        {
-            for (int y = 0; y < height; y++)
-            {
-                float value = Mathf.Clamp01(noiseMap[x, y]);
-                Color color = new Color(value, value, value);
-                texture.SetPixel(x, y, color);
-            }
-        }
+    for (int x = 0; x < width; x++)
+    {
+for (int y = 0; y < height; y++)
+    {
+float value = Mathf.Clamp01(noiseMap[x, y]);
+    Color color = new Color(value, value, value);
+    texture.SetPixel(x, y, color);
+    }
+}
 
-        texture.Apply();
-        byte[] pngData = null;
-        pngData = texture.EncodeToPNG();
+    texture.Apply();
+    byte[] pngData = null;
+    pngData = texture.EncodeToPNG();
 
-        string folderPath = Path.Combine(Application.dataPath, "NoiseDebug");
-        if (!Directory.Exists(folderPath))
-            Directory.CreateDirectory(folderPath);
+    string folderPath = Path.Combine(Application.dataPath, "NoiseDebug");
+    if (!Directory.Exists(folderPath))
+    Directory.CreateDirectory(folderPath);
 
-        string filePath = Path.Combine(folderPath, name + ".png");
-        File.WriteAllBytes(filePath, pngData);
-        Debug.Log("Saved " + name + " to " + filePath);
+    string filePath = Path.Combine(folderPath, name + ".png");
+    File.WriteAllBytes(filePath, pngData);
+    Debug.Log("Saved " + name + " to " + filePath);
     }
 }
