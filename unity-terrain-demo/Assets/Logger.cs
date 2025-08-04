@@ -4,7 +4,6 @@ using UnityEngine;
 
 namespace TerrainDemo
 {
-
     public enum LogType
     {
         Debug,
@@ -13,12 +12,9 @@ namespace TerrainDemo
 
     public class TerrainLogger
     {
-        private static string logFilePath;
+        private static string _logFilePath;
 
-        public TerrainLogger()
-        {
-            SetLogPath();
-        }
+        public TerrainLogger() { }
 
         public static void Log(string message)
         {
@@ -35,13 +31,30 @@ namespace TerrainDemo
             Write("ERROR", message);
         }
 
+        private static string LogFilePath
+        {
+            get
+            {
+                if(string.IsNullOrEmpty(_logFilePath))
+                {
+                    SetLogPath();
+                }
+
+                return _logFilePath;
+            }
+        }
+
         private static void Write(string level, string message)
         {
             string timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.fff");
             string formatted = $"[{timestamp}] [{level}] {message}";
 
             DebugOutput(level, formatted);
-            //File.AppendAllText(logFilePath, formatted + Environment.NewLine);
+
+            try
+            {
+                File.AppendAllText(LogFilePath, formatted + Environment.NewLine);
+            } catch { }
         }
 
         private static void SetLogPath()
@@ -50,18 +63,11 @@ namespace TerrainDemo
             Directory.CreateDirectory(logsDir);
 
             string daystamp = DateTime.Now.ToString("yyyy-MM-dd");
-            logFilePath = Path.Combine(logsDir, $"log_{daystamp}.txt");
-
-            Log("Logger initialized.");
+            _logFilePath = Path.Combine(logsDir, $"log_{daystamp}.txt");
         }
 
         private static void DebugOutput(string level, string message)
         {
-            if(string.IsNullOrEmpty(logFilePath))
-            {
-                SetLogPath();
-            }
-
             switch (level)
             {
                 case "ERROR":
