@@ -41,7 +41,7 @@ namespace TerrainDemo
             string formatted = $"[{timestamp}] [{level}] {message}";
 
             DebugOutput(level, formatted);
-            File.AppendAllText(logFilePath, formatted + Environment.NewLine);
+            //File.AppendAllText(logFilePath, formatted + Environment.NewLine);
         }
 
         private static void SetLogPath()
@@ -49,7 +49,7 @@ namespace TerrainDemo
             string logsDir = Path.Combine(Application.dataPath, "../Logs");
             Directory.CreateDirectory(logsDir);
 
-            string timestamp = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
+            string daystamp = DateTime.Now.ToString("yyyy-MM-dd");
             logFilePath = Path.Combine(logsDir, $"log_{timestamp}.txt");
 
             Log("Logger initialized.");
