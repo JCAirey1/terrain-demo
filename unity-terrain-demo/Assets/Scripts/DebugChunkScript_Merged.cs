@@ -67,6 +67,61 @@ public class DebugChunkScript_Merged : MonoBehaviour
         }
     }
 
+    void OnDrawGizmosSelected()
+    {
+
+        if (debugChunkWireframe) //Draw bounds when selected
+        {
+            DrawChunkBounds();
+        }
+
+        if (debugChunkVoxelVal) //Draw spheres when selected
+        {
+            DrawChunkVoxelVal();
+        }
+    }
+
+    void DrawChunkVoxelVal()
+    {
+        Gizmos.color = Color.white;
+
+        if(_chunk == null || _chunk.TerrainMap == null)
+        {
+            TerrainLogger.Warn("Chunk or TerrainMap is null, skipping voxel value drawing.");
+            return;
+        }
+
+        for (int x = 0; x < width + 1; x++)
+        {
+            for (int y = 0; y < height + 1; y++)
+            {
+                for (int z = 0; z < width + 1; z++)
+                {
+                    float val = _chunk.TerrainMap[x, y, z] / 255f;
+
+                    // Convert the scalar value to a grayscale color.
+                    float intensity = Mathf.Clamp01(val); // assumes values roughly between 0–1
+                    Gizmos.color = new Color(intensity, intensity, intensity);
+
+                    // Offset by the chunk's world position
+                    var position = new Vector3(x, y, z) + transform.position;
+                    Gizmos.DrawSphere(position, 0.1f); // Small sphere at the grid point
+                }
+            }
+        }
+    }
+
+    private void DrawChunkBounds()
+    {
+        Gizmos.color = Color.yellow;
+
+        // Define the size and position of the bounding box
+        var center = new Vector3(width / 2f, height / 2f, width / 2f) + transform.position;
+        var size = new Vector3(width, height, width);
+
+        Gizmos.DrawWireCube(center, size);
+    }
+
     private ChunkOptions GetOptions()
     {
         return new ChunkOptions
