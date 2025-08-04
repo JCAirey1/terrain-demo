@@ -50,7 +50,7 @@ namespace TerrainDemo
             Directory.CreateDirectory(logsDir);
 
             string daystamp = DateTime.Now.ToString("yyyy-MM-dd");
-            logFilePath = Path.Combine(logsDir, $"log_{timestamp}.txt");
+            logFilePath = Path.Combine(logsDir, $"log_{daystamp}.txt");
 
             Log("Logger initialized.");
         }
