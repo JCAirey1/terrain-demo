@@ -101,7 +101,10 @@ public class DebugChunkScript_Merged : MonoBehaviour
 
                     // Convert the scalar value to a grayscale color.
                     float intensity = Mathf.Clamp01(val); // assumes values roughly between 0–1
-                    Gizmos.color = new Color(intensity, intensity, intensity);
+                    int intensityInt = intensity == 0 ? 0 : 255;
+
+                    // Gizmos.color = new Color(intensity, intensity, intensity);
+                    Gizmos.color = new Color(intensityInt, intensityInt, intensityInt);
 
                     // Offset by the chunk's world position
                     var position = new Vector3(x, y, z) + transform.position;
