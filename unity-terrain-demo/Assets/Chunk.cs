@@ -63,14 +63,6 @@ public class Chunk
         _trianglesArray = new int[_chunkOptions.Width * _chunkOptions.Width * _chunkOptions.Height * 5];
     }
 
-    public void SetOptions(ChunkOptions chunkOptions)
-    {
-        if (chunkOptions != null)
-        {
-            _chunkOptions = chunkOptions;
-        }
-    }
-
     public void Render()
     {
         PopulateTerrainMap();
@@ -83,6 +75,13 @@ public class Chunk
         CreateMeshData();
         BuildMesh();
     }
+
+    public void ReRender(ChunkOptions chunkOptions)
+    {
+        _chunkOptions = chunkOptions ?? new ChunkOptions();
+        ReRender();
+    }
+    
 
     // The data points for terrain are stored at the corners of our "cubes", so the terrainMap needs to be 1 larger than the width/height of our mesh.
     void PopulateTerrainMap()

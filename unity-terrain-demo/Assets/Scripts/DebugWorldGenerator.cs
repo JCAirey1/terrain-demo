@@ -135,8 +135,7 @@ public class DebugWorldGenerator : MonoBehaviour
         // Otherwise, update and re-render existing chunks
         foreach (var chunk in _chunks)
         {
-            chunk.Value.SetOptions(_options);
-            chunk.Value.ReRender();
+            chunk.Value.ReRender(_options);
         }
     }
 
