@@ -63,6 +63,7 @@
     <Compile Include="Assets\Constants\Constants.cs" />
     <Compile Include="Assets\Scripts\DebugChunkScript.cs" />
     <Compile Include="Assets\Logger.cs" />
+    <Compile Include="Assets\Scripts\DebugChunkScript_Merged.cs" />
     <Compile Include="Assets\Scripts\BasicMovement.cs" />
     <Compile Include="Assets\Chunk.cs" />
     <Compile Include="Assets\Scripts\CubeGeneratorScript.cs" />
