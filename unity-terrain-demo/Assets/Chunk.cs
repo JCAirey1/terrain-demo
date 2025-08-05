@@ -7,18 +7,19 @@ using UnityEngine;
 public class Chunk
 {
     #region Privates
-    private Vector3Int _chunkPosition;
-    private Vector3[] _verticesArray;
-    private int[] _trianglesArray;
+    private readonly Vector3Int _chunkPosition;
+    private readonly Vector3[] _verticesArray;
+    private readonly int[] _trianglesArray;
     private int _vertexCount = 0;
     private int _triangleCount = 0;
     private ChunkOptions _chunkOptions = null;
-    private readonly List<Vector3> _verticesList = new List<Vector3>();
-    private readonly List<int> _trianglesList = new List<int>();
+    private readonly List<Vector3> _verticesList = new();
+    private readonly List<int> _trianglesList = new();
     private readonly MeshFilter _meshFilter;
     private readonly MeshCollider _meshCollider;
     private readonly MeshRenderer _meshRenderer;
     private readonly float[,,] _terrainMap;
+    private readonly Dictionary<Vector3Int, float[]> _customVoxelMap = new();
     private readonly Mesh _mesh;
 
     private float[,] continentalnessMap;
@@ -70,18 +71,64 @@ public class Chunk
         BuildMesh();
     }
 
-    public void ReRender()
-    {
-        CreateMeshData();
-        BuildMesh();
-    }
-
     public void ReRender(ChunkOptions chunkOptions)
     {
         _chunkOptions = chunkOptions ?? new ChunkOptions();
         ReRender();
     }
-    
+
+    public void SetCustomVoxelValues(Vector3Int position, float[] values)
+    {
+        if (values.Length != 8)
+        {
+            throw new ArgumentException("Custom voxel values must contain exactly 8 float values.");
+        }
+
+        _customVoxelMap[position] = values;
+    }
+
+    void PopulateTerrainPoint(Vector3Int point)
+    {
+        if (_customVoxelMap.ContainsKey(point))
+        {
+            // Use custom voxel values if available
+            _terrainMap[point.x, point.y, point.z] = _customVoxelMap[point][0]; // Assuming we use the first value for height
+            return;
+        }
+
+        if (_chunkOptions.Noise2D)
+        {
+            //Using clamp to bound PerlinNoise as it intends to return a value 0.0f-1.0f but may sometimes be slightly out of that range
+            //Multipying by chunkOptions.Height will return a value in the range of 0-height
+            float thisHeight = GetTerrianHeight(point.x, _position.x, point.z, _position.z);
+
+            //y points below thisHeight will be negative (below terrain) and y points above this chunkOptions.Height will be positve and will render 
+            _terrainMap[point.x, point.y, point.z] = (float)point.y - thisHeight;
+        }
+        else if (_chunkOptions.DebugUseSplineShaping)
+        {
+            //Continentalness, Erosion, Peaks & Valleys Spline Noise Shaping
+            float thisHeight = GetTerrianHeightSpline(point.x, _position.x, point.z, _position.z);
+
+            //>0 = solid, <0 = air
+            //Debug.Log(thisHeight);
+            _terrainMap[point.x, point.y, point.z] = (float)point.y - thisHeight;
+        }
+        else if (!_chunkOptions.Noise2D)
+        {
+
+            //3D Perlin Noise Function
+            float noiseValue = GetTerrianHeight3D(point.x + _position.x, point.y + _position.y, point.z + _position.z);
+
+            //need to adjust parameters (namely Base Terrain Height) to visualize result. Removed notion of thisHeight which is purely surface level thinking
+            _terrainMap[point.x, point.y, point.z] = noiseValue;
+        }
+        else
+        {
+            Debug.Log("UNEXPECTED ERROR WITH NOISE FUNCITON SELECTION");
+            return;
+        }
+    }
 
     // The data points for terrain are stored at the corners of our "cubes", so the terrainMap needs to be 1 larger than the width/height of our mesh.
     void PopulateTerrainMap()
@@ -91,45 +138,45 @@ public class Chunk
         peaksValleysMap = new float[_chunkOptions.Width + 1, _chunkOptions.Width + 1];
         peaksValleysBoolMap = new float[_chunkOptions.Width + 1, _chunkOptions.Width + 1];
         octave1Map = new float[_chunkOptions.Width + 1, _chunkOptions.Width + 1];
+        var point = new Vector3Int(0, 0, 0);
 
         for (int x = 0; x < _chunkOptions.Width + 1; x++)
         {
-            for (int y = 0; y < _chunkOptions.Height + 1; y++)
+            for (int z = 0; z < _chunkOptions.Width + 1; z++)
             {
-                for (int z = 0; z < _chunkOptions.Width + 1; z++)
+                point.Set(x, 0, z);
+                PopulateTerrainPoint(point);
+            }
+        }
+
+        for (int z = 0; z < _chunkOptions.Width + 1; z++)
+        {
+            for (int y = 1; y < _chunkOptions.Height + 1; y++)
+            {
+                point.Set(0, y, z);
+                PopulateTerrainPoint(point);
+            }
+        }
+
+        for (int x = 1; x < _chunkOptions.Width + 1; x++)
+        {
+            for (int y = 1; y < _chunkOptions.Height + 1; y++)
+            {
+                point.Set(x, y, 0);
+                PopulateTerrainPoint(point); //z0 origin plane
+            }
+        }
+
+        for (int y = 1; y < _chunkOptions.Height + 1; y++)
+        {
+            for (int x = 1; x < _chunkOptions.Width + 1; x++)
+            {
+                for (int z = 1; z < _chunkOptions.Width + 1; z++)
                 {
-                    if (_chunkOptions.Noise2D)
-                    {
-                        //Using clamp to bound PerlinNoise as it intends to return a value 0.0f-1.0f but may sometimes be slightly out of that range
-                        //Multipying by chunkOptions.Height will return a value in the range of 0-height
-                        float thisHeight = GetTerrianHeight(x, _position.x, z, _position.z);
+                    point.Set(x - 1, y - 1, z - 1);
+                    PopulateTerrainPoint(point);
 
-                        //y points below thisHeight will be negative (below terrain) and y points above this chunkOptions.Height will be positve and will render 
-                        _terrainMap[x, y, z] = (float)y - thisHeight;
-                    }
-                    else if (_chunkOptions.DebugUseSplineShaping)
-                    {
-                        //Continentalness, Erosion, Peaks & Valleys Spline Noise Shaping
-                        float thisHeight = GetTerrianHeightSpline(x, _position.x, z, _position.z);
-
-                        //>0 = solid, <0 = air
-                        //Debug.Log(thisHeight);
-                        _terrainMap[x, y, z] = (float)y - thisHeight;
-                    }
-                    else if (!_chunkOptions.Noise2D)
-                    {
-
-                        //3D Perlin Noise Function
-                        float noiseValue = GetTerrianHeight3D(x + _position.x, y + _position.y, z + _position.z);
-
-                        //need to adjust parameters (namely Base Terrain Height) to visualize result. Removed notion of thisHeight which is purely surface level thinking
-                        _terrainMap[x, y, z] = noiseValue;
-                    }
-                    else
-                    {
-                        Debug.Log("UNEXPECTED ERROR WITH NOISE FUNCITON SELECTION");
-                        return;
-                    }
+                    MarchCube(point);
                 }
             }
         }
@@ -255,31 +302,15 @@ public class Chunk
 
     void ClearMeshData()
     {
-        _verticesList.Clear();
-        _trianglesList.Clear();
-        _vertexCount = 0;
-        _triangleCount = 0;
+        //_verticesList.Clear();
+        //_trianglesList.Clear();
+        //_vertexCount = 0;
+        //_triangleCount = 0;
     }
 
     void CreateMeshData()
     {
         ClearMeshData();
-
-        var point = new Vector3Int(0, 0, 0);
-
-        //looking at the cubes, not the points, so you only need to loop the _width number and not the _width + 1 numbers
-        for (int x = 0; x < _chunkOptions.Width; x++)
-        {
-            for (int y = 0; y < _chunkOptions.Height; y++)
-            {
-                for (int z = 0; z < _chunkOptions.Width; z++)
-                {
-                    point.Set(x, y, z);
-                    MarchCube(point);
-                }
-            }
-        }
-
         BuildMesh();
     }
 
