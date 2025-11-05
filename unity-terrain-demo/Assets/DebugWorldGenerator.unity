@@ -243,7 +243,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9f789382a97d8a7418242d6f751fd244, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  WorldSizeInChunks: 16
+  WorldSizeInChunks: 4
   WorldSeed: 1
   Noise2D: 0
   Scale: 16
@@ -264,6 +264,7 @@ MonoBehaviour:
   DebugChunkVoxelValPersistence: 0
   DebugUseSplineShaping: 1
   DebugSaveNoiseMaps: 0
+  AlwaysUpdate: 0
 --- !u!1 &882016950
 GameObject:
   m_ObjectHideFlags: 0
